@@ -277,8 +277,10 @@ label{display:block;font-size:13px;font-weight:600;margin:10px 0 5px;color:var(-
     <div class="row"><input type="month" id="adBudgetMonth" class="grow">
       <input type="number" id="adBudget" placeholder="ยอดเงินสนับสนุน อบต. (บาท)" style="flex:1.4"></div>
     <label class="mt">พิกัดที่ตั้งศูนย์ (ฐาน)</label>
-    <div class="row"><input id="adLat" placeholder="ละติจูด"><input id="adLng" placeholder="ลองจิจูด">
-      <button class="btn btn-ghost" onclick="useHere()" style="white-space:nowrap">📍 ใช้จุดนี้</button></div>
+    <div class="row mb"><input id="adLat" placeholder="ละติจูด" readonly><input id="adLng" placeholder="ลองจิจูด" readonly></div>
+    <div class="row">
+      <button class="btn btn-navy grow" onclick="pickOnMap()">🗺 เลือกจากแผนที่</button>
+      <button class="btn btn-ghost" onclick="useHere()" style="white-space:nowrap">📍 ใช้ตำแหน่งปัจจุบัน</button></div>
     <label>รัศมีศูนย์ (เมตร) — ออกนอกรัศมีนี้ระบบจะแจ้งเตือน</label>
     <input type="number" id="adRadius" placeholder="300">
     <label class="mt" style="display:flex;align-items:center;gap:8px;color:var(--ink)">
@@ -352,7 +354,10 @@ function modal(html) {
   const h = $('modalHost');
   h.innerHTML = `<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`;
 }
-function closeModal() { $('modalHost').innerHTML = ''; stopCam(); }
+function closeModal() {
+  $('modalHost').innerHTML = ''; stopCam();
+  if (typeof pickMap !== 'undefined' && pickMap) { pickMap.remove(); pickMap = null; pickMarker = null; }
+}
 
 /* ---------- login ---------- */
 async function doLogin() {
@@ -721,6 +726,67 @@ async function delUser(id) {
   const r = await api('deleteUser', { userId: id });
   if (r.ok) { toast('ลบแล้ว'); closeModal(); loadAdmin(); }
 }
+/* ---------- เลือกพิกัดศูนย์จากแผนที่ (แอดมินเท่านั้น — เซิร์ฟเวอร์ตรวจสิทธิ์ซ้ำอีกชั้น) ---------- */
+let leafletReady = null, pickMap = null, pickMarker = null, pickPos = null;
+function loadLeaflet() {
+  if (leafletReady) return leafletReady;
+  leafletReady = new Promise((res, rej) => {
+    const l = document.createElement('link'); l.rel = 'stylesheet';
+    l.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(l);
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    s.onload = res; s.onerror = () => { leafletReady = null; rej('โหลดแผนที่ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ต'); };
+    document.head.appendChild(s);
+  });
+  return leafletReady;
+}
+async function pickOnMap() {
+  if (S.role !== 'admin') return toast('สิทธิ์แอดมินเท่านั้น');
+  try { await loadLeaflet(); } catch (e) { return toast(e); }
+  pickPos = null;
+  modal(`<h3>🗺 เลือกพิกัดที่ตั้งศูนย์</h3>
+    <p class="muted" style="margin-bottom:8px">แตะบนแผนที่ หรือลากหมุด ไปยังจุดที่ตั้งศูนย์ (ซูมเข้าเพื่อความแม่นยำ)</p>
+    <div id="pickMapEl" style="height:52vh;border-radius:12px;border:1.5px solid var(--line)"></div>
+    <div class="mono muted center" style="margin-top:8px" id="pickCoords">ยังไม่ได้เลือกจุด</div>
+    <button class="btn btn-navy btn-block mt" id="pickOk" disabled onclick="applyPick()">✔ ใช้พิกัดนี้เป็นที่ตั้งศูนย์</button>
+    <button class="btn btn-ghost btn-block mt" onclick="closePickMap()">ยกเลิก</button>`);
+  // จุดเริ่มต้น: พิกัดศูนย์เดิม > ตำแหน่งปัจจุบัน > กลางประเทศไทย
+  let lat = parseFloat($('adLat').value), lng = parseFloat($('adLng').value), zoom = 17, hasOld = true;
+  if (isNaN(lat) || isNaN(lng)) {
+    hasOld = false;
+    try { const p = await getPos(); lat = p.lat; lng = p.lng; zoom = 16; }
+    catch (e) { lat = 13.7563; lng = 100.5018; zoom = 6; }
+  }
+  if (!$('pickMapEl')) return; // เผื่อผู้ใช้กดยกเลิกระหว่างรอ GPS
+  pickMap = L.map('pickMapEl').setView([lat, lng], zoom);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(pickMap);
+  const setPin = (la, ln) => {
+    pickPos = { lat: la, lng: ln };
+    if (!pickMarker) {
+      pickMarker = L.marker([la, ln], { draggable: true }).addTo(pickMap);
+      pickMarker.on('dragend', () => { const p = pickMarker.getLatLng(); setPin(p.lat, p.lng); });
+    } else pickMarker.setLatLng([la, ln]);
+    $('pickCoords').textContent = la.toFixed(6) + ', ' + ln.toFixed(6);
+    $('pickOk').disabled = false;
+  };
+  if (hasOld) setPin(lat, lng); // แสดงหมุดพิกัดเดิมถ้ามี
+  pickMap.on('click', e => setPin(e.latlng.lat, e.latlng.lng));
+  setTimeout(() => pickMap.invalidateSize(), 200);
+}
+function closePickMap() {
+  if (pickMap) { pickMap.remove(); pickMap = null; pickMarker = null; }
+  closeModal();
+}
+function applyPick() {
+  if (!pickPos) return;
+  $('adLat').value = pickPos.lat.toFixed(6);
+  $('adLng').value = pickPos.lng.toFixed(6);
+  closePickMap();
+  toast('เลือกพิกัดแล้ว ✔ อย่าลืมกด "บันทึกการตั้งค่า" ด้านล่าง', 4500);
+}
+
 async function useHere() {
   try { const p = await getPos(); $('adLat').value = p.lat.toFixed(6); $('adLng').value = p.lng.toFixed(6); toast('ใช้พิกัดปัจจุบันแล้ว'); }
   catch (e) { toast(e); }
