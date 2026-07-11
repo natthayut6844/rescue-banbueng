@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17356B">
+<title>เวรกู้ชีพกู้ภัย ต.บ้านบึง</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF1F5; --card:#FFFFFF; --ink:#12203A; --muted:#5B6B85;
+  --navy:#17356B; --navy-d:#0E2450; --red:#D71920; --red-d:#A80F15;
+  --hivis:#FFC400; --green:#0E9F6E; --amber:#B45309; --line:#DDE3EC;
+  --r:14px; --shadow:0 2px 10px rgba(18,32,58,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'IBM Plex Sans Thai',sans-serif;background:var(--bg);color:var(--ink);
+  font-size:15px;-webkit-tap-highlight-color:transparent;padding-bottom:env(safe-area-inset-bottom)}
+h1,h2,h3,.disp{font-family:'Kanit',sans-serif}
+button{font-family:inherit;font-size:inherit;border:0;cursor:pointer;background:none}
+input,select,textarea{font-family:inherit;font-size:15px;width:100%;padding:10px 12px;
+  border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--navy);outline-offset:1px}
+.mono{font-variant-numeric:tabular-nums;letter-spacing:.02em}
+
+/* ===== แถบสะท้อนแสง (signature) ===== */
+.stripe{height:10px;background:repeating-linear-gradient(-45deg,var(--hivis) 0 14px,var(--navy-d) 14px 28px)}
+
+/* ===== header ===== */
+header{background:var(--navy);color:#fff;position:sticky;top:0;z-index:40}
+.hd-in{display:flex;align-items:center;gap:10px;padding:12px 16px}
+.sol{width:38px;height:38px;flex:0 0 auto}
+header h1{font-size:17px;font-weight:600;line-height:1.15}
+header small{display:block;font-family:'IBM Plex Sans Thai';font-weight:400;opacity:.75;font-size:12px}
+.hd-user{margin-left:auto;text-align:right;font-size:12px;opacity:.9}
+.hd-user b{display:block;font-size:13px}
+
+/* ===== layout ===== */
+main{max-width:760px;margin:0 auto;padding:14px 14px 92px}
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.card h2{font-size:16px;color:var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.eyebrow{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.row{display:flex;gap:10px;align-items:center}
+.grow{flex:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hidden{display:none!important}
+.center{text-align:center}
+.mt{margin-top:12px}.mb{margin-bottom:12px}
+.muted{color:var(--muted);font-size:13px}
+
+/* ===== buttons ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;
+  border-radius:12px;font-weight:600;font-family:'Kanit';transition:transform .06s}
+.btn:active{transform:scale(.97)}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-red{background:var(--red);color:#fff}
+.btn-ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.btn-green{background:var(--green);color:#fff}
+.btn-block{width:100%}
+.btn[disabled]{opacity:.5;pointer-events:none}
+
+/* ===== ปุ่มเช็คอินวงกลม ===== */
+.bigbtn-wrap{display:flex;flex-direction:column;align-items:center;padding:8px 0 4px}
+.bigbtn{width:168px;height:168px;border-radius:50%;color:#fff;font-family:'Kanit';font-size:24px;font-weight:600;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;
+  box-shadow:0 8px 24px rgba(23,53,107,.35)}
+.bigbtn small{font-family:'IBM Plex Sans Thai';font-weight:400;font-size:12px;opacity:.85}
+.bigbtn.in{background:radial-gradient(circle at 30% 25%,#2A55A8,var(--navy) 70%)}
+.bigbtn.out{background:radial-gradient(circle at 30% 25%,#F0403F,var(--red) 70%);box-shadow:0 8px 24px rgba(215,25,32,.35)}
+.ring{position:absolute;inset:-10px;border-radius:50%;border:3px solid var(--green);opacity:0;pointer-events:none}
+.onduty .ring{animation:pulse 2.2s ease-out infinite;opacity:1}
+@keyframes pulse{0%{transform:scale(.95);opacity:.9}70%{transform:scale(1.12);opacity:0}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.onduty .ring{animation:none;opacity:.8}}
+
+/* ===== status chips ===== */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px}
+.chip::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor}
+.c-on{background:#E3F6EE;color:var(--green)}
+.c-off{background:#EDF0F5;color:var(--muted)}
+.c-out{background:#FFF3D6;color:var(--amber)}
+.c-disp{background:#FDE5E6;color:var(--red)}
+
+/* ===== dashboard people grid ===== */
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.person{background:#fff;border:1.5px solid var(--line);border-radius:var(--r);padding:12px;text-align:center;position:relative}
+.person.st-dispatch{border-color:var(--red)}
+.person.st-outside{border-color:var(--hivis)}
+.avatar{width:76px;height:76px;border-radius:50%;object-fit:cover;background:#DCE3EE;
+  border:3px solid var(--navy);display:block;margin:0 auto 8px}
+.person.st-dispatch .avatar{border-color:var(--red)}
+.person.st-off .avatar{border-color:var(--line);filter:grayscale(1);opacity:.7}
+.person b{display:block;font-size:14px;margin-bottom:4px}
+.person .meta{font-size:11.5px;color:var(--muted);line-height:1.5}
+
+/* ===== banner ===== */
+.banner{border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.b-red{background:var(--red);color:#fff}
+.b-amber{background:#FFF3D6;color:var(--amber);border:1.5px solid var(--hivis)}
+.banner .btn{padding:8px 14px}
+
+/* ===== table ===== */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{font-family:'Kanit';font-weight:500;color:var(--muted);text-align:left;padding:8px 6px;border-bottom:2px solid var(--line);font-size:12.5px}
+.tbl td{padding:9px 6px;border-bottom:1px solid var(--line)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .num{text-align:right}
+.tbl tbody tr{cursor:pointer}
+
+/* stat cards */
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--navy);color:#fff;border-radius:12px;padding:12px 10px;text-align:center}
+.stat.alt{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.stat .v{font-family:'Kanit';font-size:20px;font-weight:600;line-height:1.2}
+.stat .l{font-size:11px;opacity:.8}
+
+/* ===== bottom tabs ===== */
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1.5px solid var(--line);z-index:40;
+  padding-bottom:env(safe-area-inset-bottom)}
+.tabs{display:flex;max-width:760px;margin:0 auto}
+.tab{flex:1;padding:9px 4px 8px;text-align:center;color:var(--muted);font-size:11px;display:flex;
+  flex-direction:column;align-items:center;gap:3px}
+.tab svg{width:22px;height:22px}
+.tab.on{color:var(--navy);font-weight:600}
+.tab.on svg{stroke:var(--navy)}
+
+/* ===== modal ===== */
+.overlay{position:fixed;inset:0;background:rgba(14,25,45,.55);z-index:60;display:flex;
+  align-items:flex-end;justify-content:center}
+@media(min-width:560px){.overlay{align-items:center}}
+.modal{background:#fff;border-radius:18px 18px 0 0;width:100%;max-width:520px;max-height:92vh;overflow:auto;padding:18px}
+@media(min-width:560px){.modal{border-radius:18px}}
+.modal h3{font-size:17px;color:var(--navy);margin-bottom:12px}
+.opt{display:block;width:100%;text-align:left;padding:13px 14px;border:1.5px solid var(--line);
+  border-radius:12px;margin-bottom:8px;font-weight:500;background:#fff}
+.opt:active{background:#F2F5FA}
+.opt.danger{border-color:var(--red);color:var(--red);font-weight:600}
+
+/* camera */
+#camWrap video{width:100%;border-radius:12px;background:#000;aspect-ratio:3/4;object-fit:cover}
+#shot{width:100%;border-radius:12px}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;
+  padding:10px 18px;border-radius:99px;font-size:14px;z-index:80;opacity:0;transition:.25s;pointer-events:none;max-width:88%;text-align:center}
+#toast.show{opacity:1}
+
+/* login */
+#loginView{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(170deg,var(--navy) 0%,var(--navy-d) 70%);padding:24px}
+.login-card{background:#fff;border-radius:18px;padding:26px 22px;width:100%;max-width:380px}
+.login-hd{text-align:center;color:#fff;margin-bottom:20px}
+.login-hd .sol{width:74px;height:74px;margin-bottom:10px}
+.login-hd h1{font-size:22px}
+.login-hd p{opacity:.75;font-size:13px}
+label{display:block;font-size:13px;font-weight:600;margin:10px 0 5px;color:var(--muted)}
+.spin{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;
+  animation:sp .7s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+.skel{color:var(--muted);text-align:center;padding:18px 0}
+.detailrow{border-bottom:1px solid var(--line);padding:9px 2px;font-size:13.5px}
+.detailrow:last-child{border-bottom:0}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginView">
+  <div class="login-hd">
+    <svg class="sol" viewBox="0 0 64 64"><g fill="none"><circle cx="32" cy="32" r="30" fill="#FFC400"/><circle cx="32" cy="32" r="26" fill="#17356B"/><g stroke="#fff" stroke-width="7" stroke-linecap="round"><path d="M32 12v40M14.7 22l34.6 20M14.7 42l34.6-20"/></g></g></svg>
+    <h1>หน่วยกู้ชีพกู้ภัยตำบลบ้านบึง</h1>
+    <p>ระบบบันทึกการเข้าเวรปฏิบัติงาน</p>
+  </div>
+  <div class="login-card">
+    <label for="liId">รหัสประจำตัว (ID)</label>
+    <input id="liId" autocomplete="username" placeholder="เช่น r001">
+    <label for="liPin">รหัสผ่าน (PIN)</label>
+    <input id="liPin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••">
+    <button class="btn btn-navy btn-block mt" id="btnLogin" onclick="doLogin()">เข้าสู่ระบบ</button>
+    <p class="muted center mt" id="liMsg"></p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="appView" class="hidden">
+<header>
+  <div class="hd-in">
+    <svg class="sol" viewBox="0 0 64 64"><g fill="none"><circle cx="32" cy="32" r="30" fill="#FFC400"/><circle cx="32" cy="32" r="26" fill="#0E2450"/><g stroke="#fff" stroke-width="7" stroke-linecap="round"><path d="M32 12v40M14.7 22l34.6 20M14.7 42l34.6-20"/></g></g></svg>
+    <h1>เวรกู้ชีพกู้ภัย<small>ตำบลบ้านบึง</small></h1>
+    <div class="hd-user"><b id="hdName"></b><span id="hdRole"></span> · <a href="#" onclick="logout();return false" style="color:#FFC400">ออกจากระบบ</a></div>
+  </div>
+  <div class="stripe"></div>
+</header>
+
+<main>
+
+<!-- ---------- TAB: หน้าเวร ---------- -->
+<section id="tab-duty">
+  <div id="dispatchBannerDuty"></div>
+  <div class="card center" id="dutyCard">
+    <div class="eyebrow" id="dutyShiftLabel">กำลังโหลด…</div>
+    <div class="bigbtn-wrap" id="bigWrap">
+      <button class="bigbtn in" id="bigBtn" onclick="bigPress()">
+        <span class="ring"></span>
+        <span id="bigTxt">เช็คอิน</span><small id="bigSub">ถ่ายรูป + บันทึกพิกัด</small>
+      </button>
+    </div>
+    <div id="dutyInfo" class="muted mt"></div>
+    <div id="gpsLine" class="muted mono" style="font-size:12px;margin-top:6px"></div>
+  </div>
+
+  <div class="card" id="dutyStatusCard">
+    <h2>สถานะเวรของฉัน</h2>
+    <div id="dutyDetail" class="muted">ยังไม่ได้เช็คอิน</div>
+  </div>
+
+  <div class="card">
+    <h2>เวลาเวรปกติ</h2>
+    <div class="grid2">
+      <div><b class="disp">กะเช้า</b><div class="muted mono">06:00 – 18:00 น.</div></div>
+      <div><b class="disp">กะบ่าย</b><div class="muted mono">18:00 – 06:00 น.</div></div>
+    </div>
+    <p class="muted mt" style="font-size:12.5px">หลังเช็คอิน แอปจะบันทึกพิกัดต่อเนื่องจนกว่าจะเช็คเอาท์ — กรุณาเปิดแอปค้างไว้ระหว่างเข้าเวร</p>
+  </div>
+</section>
+
+<!-- ---------- TAB: แดชบอร์ด ---------- -->
+<section id="tab-board" class="hidden">
+  <div id="dispatchBanner"></div>
+  <div class="card">
+    <h2>ผู้ปฏิบัติงานวันนี้ <span class="chip c-on" id="onCount" style="margin-left:auto">0 คน</span></h2>
+    <div class="muted mb" id="boardShift"></div>
+    <div class="people" id="peopleGrid"><div class="skel">กำลังโหลด…</div></div>
+    <p class="muted mt center" style="font-size:12px" id="boardTime"></p>
+  </div>
+</section>
+
+<!-- ---------- TAB: สถิติ ---------- -->
+<section id="tab-stats" class="hidden">
+  <div class="card">
+    <h2>สถิติการปฏิบัติงาน</h2>
+    <div class="row mb"><input type="month" id="statMonth" class="grow" onchange="loadStats()">
+      <button class="btn btn-navy" onclick="loadStats()">ดู</button></div>
+    <div class="stat3" id="payCards"></div>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr><th>ชื่อ</th><th class="num">เวร</th><th class="num">ชม.</th><th class="num">ไม่ครบ</th><th class="num">ค่าเวร (฿)</th></tr></thead>
+      <tbody id="statBody"><tr><td colspan="5" class="skel">เลือกเดือนเพื่อดูสถิติ</td></tr></tbody>
+    </table></div>
+    <p class="muted mt" style="font-size:12px">แตะรายชื่อเพื่อดูรายละเอียดรายเวร · อัตราค่าเวร = ยอดเงินสนับสนุน อบต. ÷ จำนวนเวรรวมทั้งเดือน</p>
+  </div>
+</section>
+
+<!-- ---------- TAB: ของฉัน ---------- -->
+<section id="tab-me" class="hidden">
+  <div class="card">
+    <h2>ข้อมูลของฉัน</h2>
+    <div class="row mb"><input type="month" id="meMonth" class="grow" onchange="loadMe()"></div>
+    <div class="stat3" id="meCards"></div>
+    <div id="meDuty" class="muted mb"></div>
+    <h2 style="font-size:14px">ประวัติเวรเดือนนี้</h2>
+    <div id="meDetail" class="skel">กำลังโหลด…</div>
+  </div>
+  <div class="card">
+    <h2>ประวัติพิกัดย้อนหลัง</h2>
+    <div class="row mb"><input type="date" id="histDate" class="grow"><button class="btn btn-navy" onclick="loadHist()">ดู</button></div>
+    <div id="histList" class="muted">เลือกวันที่เพื่อดูจุดพิกัดที่บันทึกไว้</div>
+  </div>
+</section>
+
+<!-- ---------- TAB: แอดมิน ---------- -->
+<section id="tab-admin" class="hidden">
+  <div class="card">
+    <h2>ตั้งค่าระบบ (แอดมิน)</h2>
+    <label>เดือนที่ตั้งงบ</label>
+    <div class="row"><input type="month" id="adBudgetMonth" class="grow">
+      <input type="number" id="adBudget" placeholder="ยอดเงินสนับสนุน อบต. (บาท)" style="flex:1.4"></div>
+    <label class="mt">พิกัดที่ตั้งศูนย์ (ฐาน)</label>
+    <div class="row"><input id="adLat" placeholder="ละติจูด"><input id="adLng" placeholder="ลองจิจูด">
+      <button class="btn btn-ghost" onclick="useHere()" style="white-space:nowrap">📍 ใช้จุดนี้</button></div>
+    <label>รัศมีศูนย์ (เมตร) — ออกนอกรัศมีนี้ระบบจะแจ้งเตือน</label>
+    <input type="number" id="adRadius" placeholder="300">
+    <label class="mt" style="display:flex;align-items:center;gap:8px;color:var(--ink)">
+      <input type="checkbox" id="adProrate" style="width:auto"> คิดค่าเวรตามสัดส่วนชั่วโมงจริง (เวรไม่ครบได้ไม่เต็ม)</label>
+    <button class="btn btn-navy btn-block mt" onclick="saveAdminSettings()">บันทึกการตั้งค่า</button>
+  </div>
+
+  <div class="card">
+    <h2>เจ้าหน้าที่ <button class="btn btn-ghost" style="margin-left:auto;padding:6px 12px" onclick="editUser()">+ เพิ่ม</button></h2>
+    <div style="overflow-x:auto"><table class="tbl">
+      <thead><tr><th>ID</th><th>ชื่อ</th><th>สิทธิ์</th><th></th></tr></thead>
+      <tbody id="userBody"><tr><td colspan="4" class="skel">กำลังโหลด…</td></tr></tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <h2>บันทึกเหตุการณ์ / การออกนอกศูนย์</h2>
+    <div class="row mb"><input type="month" id="evMonth" class="grow" onchange="loadEvents()"></div>
+    <div id="evList" class="skel">กำลังโหลด…</div>
+  </div>
+</section>
+
+</main>
+
+<nav><div class="tabs">
+  <button class="tab on" data-tab="duty" onclick="go('duty')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>หน้าเวร</button>
+  <button class="tab" data-tab="board" onclick="go('board')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 20V9"/></svg>แดชบอร์ด</button>
+  <button class="tab" data-tab="stats" onclick="go('stats')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>สถิติ</button>
+  <button class="tab" data-tab="me" onclick="go('me')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 5-5 8-5s6.5 1 8 5"/></svg>ของฉัน</button>
+  <button class="tab hidden" data-tab="admin" id="adminTab" onclick="go('admin')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2Z"/></svg>ตั้งค่า</button>
+</div></nav>
+</div>
+
+<div id="modalHost"></div>
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   ⚙️ ตั้งค่า: วาง URL ของ Google Apps Script Web App ตรงนี้
+   ============================================================ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbwC9Y9MF36xOirTjsmY1ZaZkpDp3k9qHRUUWPMUCkLAwT57f1iFzQnprajTAiREnc6zPQ/exec';
+
+const $ = id => document.getElementById(id);
+let S = JSON.parse(localStorage.getItem('rs_session') || 'null');   // {id,pin,name,role}
+let DUTY = JSON.parse(localStorage.getItem('rs_duty') || 'null');   // {on,shiftDate,type,inTime,end,count}
+let lastPos = null, watchId = null, pingTimer = null, boardTimer = null;
+let excursionReported = false, camStream = null;
+
+/* ---------- API ---------- */
+async function api(action, payload = {}, silent = false) {
+  try {
+    const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(Object.assign({ action, id: S && S.id, pin: S && S.pin }, payload)) });
+    const j = await r.json();
+    if (!j.ok && !silent && !j.needReason) toast(j.error || 'เกิดข้อผิดพลาด');
+    return j;
+  } catch (e) {
+    if (!silent) toast('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ตรวจสอบอินเทอร์เน็ต');
+    return { ok: false, error: 'network' };
+  }
+}
+function toast(m, ms = 3200) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._x); t._x = setTimeout(() => t.classList.remove('show'), ms); }
+
+/* ---------- modal ---------- */
+function modal(html) {
+  const h = $('modalHost');
+  h.innerHTML = `<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`;
+}
+function closeModal() { $('modalHost').innerHTML = ''; stopCam(); }
+
+/* ---------- login ---------- */
+async function doLogin() {
+  const id = $('liId').value.trim(), pin = $('liPin').value.trim();
+  if (!id || !pin) return $('liMsg').textContent = 'กรอกรหัสและ PIN';
+  $('btnLogin').innerHTML = '<span class="spin"></span>'; $('btnLogin').disabled = true;
+  const r = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action: 'login', id, pin }) }).then(x => x.json()).catch(() => ({ ok: false, error: 'เชื่อมต่อไม่ได้' }));
+  $('btnLogin').textContent = 'เข้าสู่ระบบ'; $('btnLogin').disabled = false;
+  if (!r.ok) return $('liMsg').textContent = r.error || 'เข้าสู่ระบบไม่สำเร็จ';
+  S = { id, pin, name: r.user.name, role: r.user.role };
+  localStorage.setItem('rs_session', JSON.stringify(S));
+  enterApp();
+}
+function logout() {
+  if (DUTY && DUTY.on && !confirm('คุณยังเช็คอินค้างอยู่ ออกจากระบบจะหยุดการบันทึกพิกัด ต้องการออกหรือไม่?')) return;
+  stopTracking(); localStorage.removeItem('rs_session'); location.reload();
+}
+function enterApp() {
+  $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden');
+  $('hdName').textContent = S.name; $('hdRole').textContent = S.role === 'admin' ? 'ผู้ดูแลระบบ' : 'เจ้าหน้าที่';
+  if (S.role === 'admin') $('adminTab').classList.remove('hidden');
+  const m = new Date().toISOString().slice(0, 7);
+  $('statMonth').value = m; $('meMonth').value = m; $('adBudgetMonth').value = m; $('evMonth').value = m;
+  $('histDate').value = new Date().toISOString().slice(0, 10);
+  refreshDutyUI(); syncMyDuty();
+}
+
+/* ---------- tabs ---------- */
+function go(t) {
+  document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+  $('tab-' + t).classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  clearInterval(boardTimer);
+  if (t === 'board') { loadBoard(); boardTimer = setInterval(loadBoard, 30000); }
+  if (t === 'stats') loadStats();
+  if (t === 'me') loadMe();
+  if (t === 'admin') { loadAdmin(); loadEvents(); }
+  window.scrollTo(0, 0);
+}
+
+/* ---------- GPS ---------- */
+function getPos() {
+  return new Promise((res, rej) => {
+    if (!navigator.geolocation) return rej('อุปกรณ์ไม่รองรับ GPS');
+    navigator.geolocation.getCurrentPosition(
+      p => res({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      e => rej('เปิดพิกัดไม่ได้: อนุญาตการเข้าถึงตำแหน่งในเบราว์เซอร์ก่อน'),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 });
+  });
+}
+function startTracking() {
+  stopTracking();
+  watchId = navigator.geolocation.watchPosition(
+    p => { lastPos = { lat: p.coords.latitude, lng: p.coords.longitude };
+           $('gpsLine').textContent = '📡 พิกัดล่าสุด ' + lastPos.lat.toFixed(5) + ', ' + lastPos.lng.toFixed(5); },
+    () => {}, { enableHighAccuracy: true, maximumAge: 30000 });
+  sendPing();
+  pingTimer = setInterval(sendPing, 180000); // ทุก 3 นาที
+}
+function stopTracking() {
+  if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+  clearInterval(pingTimer); watchId = null; pingTimer = null;
+  $('gpsLine').textContent = '';
+}
+async function sendPing() {
+  if (!DUTY || !DUTY.on || !lastPos) return;
+  const r = await api('ping', { lat: lastPos.lat, lng: lastPos.lng }, true);
+  if (!r.ok) return;
+  if (r.outside && !excursionReported) { excursionReported = true; askOutbase(r.distanceM, r.radiusM); }
+  if (!r.outside) excursionReported = false;
+}
+
+/* ---------- แจ้งเตือนออกนอกศูนย์ ---------- */
+function askOutbase(dist, radius) {
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  modal(`
+    <h3>⚠️ คุณอยู่ห่างจากศูนย์ ${fmtDist(dist)}</h3>
+    <p class="muted mb">เกินรัศมี ${radius} ม. — ไม่อยู่ประจำศูนย์ กรุณาแจ้งสาเหตุ</p>
+    <button class="opt danger" onclick="reportOut('dispatch','ออกเหตุ / ออกปฏิบัติงาน')">🚨 ออกเหตุ (ออกปฏิบัติงาน)</button>
+    <button class="opt" onclick="reportOut('mission','ส่งผู้ป่วย / ธุระของหน่วย')">🚑 ส่งผู้ป่วย / ธุระของหน่วย</button>
+    <button class="opt" onclick="reportOut('personal','ธุระส่วนตัว')">🚶 ธุระส่วนตัว</button>
+    <button class="opt" onclick="outbaseOther()">✏️ อื่นๆ (ระบุ)</button>`);
+}
+function outbaseOther() {
+  modal(`<h3>ระบุสาเหตุที่ออกนอกศูนย์</h3>
+    <textarea id="obDetail" rows="3" placeholder="เช่น เติมน้ำมันรถกู้ชีพ"></textarea>
+    <button class="btn btn-navy btn-block mt" onclick="reportOut('other', $('obDetail').value||'อื่นๆ')">ส่งรายงาน</button>`);
+}
+async function reportOut(type, detail) {
+  closeModal();
+  const r = await api('outbase', { type, detail });
+  if (!r.ok) return;
+  if (type === 'dispatch') {
+    modal(`<h3>🚨 แจ้งออกเหตุแล้ว</h3>
+      <p class="mb">ให้ <b>คนใดคนหนึ่งในเวร</b> กดยืนยัน ระบบจะถือว่า<b>ทุกคนในเวรออกปฏิบัติงาน</b>อัตโนมัติ</p>
+      <button class="btn btn-red btn-block" onclick="confirmDisp('${r.eventId}')">✔ ยืนยันการออกปฏิบัติงาน</button>
+      <button class="btn btn-ghost btn-block mt" onclick="closeModal()">รอให้เพื่อนร่วมเวรยืนยัน</button>`);
+  } else toast('บันทึกสาเหตุแล้ว: ' + detail);
+}
+async function confirmDisp(eventId) {
+  const r = await api('confirmDispatch', { eventId });
+  if (r.ok) { toast('ยืนยันแล้ว — ทุกคนในเวรถือว่าออกปฏิบัติงาน'); closeModal(); loadBoard(); }
+}
+async function endDisp() {
+  const r = await api('endDispatch', {});
+  if (r.ok) { toast('ปิดเหตุแล้ว กลับสู่สถานะประจำศูนย์'); loadBoard(); }
+}
+function fmtDist(d) { return d >= 1000 ? (d / 1000).toFixed(1) + ' กม.' : Math.round(d) + ' ม.'; }
+
+/* ---------- กล้อง ---------- */
+function openCam(onCapture) {
+  modal(`<h3>ถ่ายรูปยืนยันตัวตน</h3>
+    <div id="camWrap"><video id="camV" autoplay playsinline muted></video></div>
+    <button class="btn btn-navy btn-block mt" id="snapBtn">📷 ถ่ายรูป</button>
+    <button class="btn btn-ghost btn-block mt" onclick="closeModal()">ยกเลิก</button>`);
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 } }, audio: false })
+    .then(st => { camStream = st; $('camV').srcObject = st; })
+    .catch(() => { closeModal(); toast('เปิดกล้องไม่ได้ — อนุญาตการใช้กล้องในเบราว์เซอร์ก่อน'); });
+  $('snapBtn').onclick = () => {
+    const v = $('camV'); if (!v.videoWidth) return;
+    const c = document.createElement('canvas');
+    const w = 480, h = Math.round(480 * v.videoHeight / v.videoWidth);
+    c.width = w; c.height = h;
+    c.getContext('2d').drawImage(v, 0, 0, w, h);
+    const b64 = c.toDataURL('image/jpeg', .72).split(',')[1];
+    stopCam(); onCapture(b64);
+  };
+}
+function stopCam() { if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; } }
+
+/* ---------- เช็คอิน / เช็คเอาท์ ---------- */
+function bigPress() { (DUTY && DUTY.on) ? doCheckout() : doCheckin(); }
+
+async function doCheckin() {
+  $('bigSub').textContent = 'กำลังหาพิกัด…';
+  let pos;
+  try { pos = await getPos(); } catch (e) { $('bigSub').textContent = 'ถ่ายรูป + บันทึกพิกัด'; return toast(e); }
+  lastPos = pos;
+  openCam(async b64 => {
+    modal(`<h3 class="center">กำลังเช็คอิน…</h3><p class="center"><span class="spin" style="border-color:#ccd;border-top-color:var(--navy)"></span></p>`);
+    const r = await api('checkin', { lat: pos.lat, lng: pos.lng, selfie: b64 });
+    closeModal();
+    if (!r.ok) return;
+    DUTY = { on: true, shiftDate: r.shift.date, type: r.shift.type, label: r.shift.label,
+             inTime: r.time, end: r.shift.end, count: r.checkinCount };
+    localStorage.setItem('rs_duty', JSON.stringify(DUTY));
+    refreshDutyUI(); startTracking();
+    let msg = `✅ เช็คอินสำเร็จ ${r.time} น. (${r.shift.label})`;
+    if (r.checkinCount > 1) msg += ` — เช็คอินครั้งที่ ${r.checkinCount} ของเวรนี้`;
+    if (r.late) msg += ' ⚠ เข้าสาย';
+    toast(msg, 4500);
+  });
+}
+
+async function doCheckout(reason) {
+  if (!lastPos) { try { lastPos = await getPos(); } catch (e) {} }
+  const r = await api('checkout', { lat: lastPos && lastPos.lat, lng: lastPos && lastPos.lng, reason });
+  if (r.needReason) return askEarlyReason(r);
+  if (!r.ok) return;
+  finishCheckout(r);
+}
+/* 7.3 ออกก่อนเวลา: แจ้งสาเหตุ + ยืนยันเวลาเข้า-ออก */
+function askEarlyReason(r) {
+  modal(`<h3>⏱ ออกเวรก่อนเวลา</h3>
+    <div class="card" style="box-shadow:none;border:1.5px solid var(--line);margin-bottom:10px">
+      <div class="detailrow">เข้าเวรเวลา <b class="mono">${r.inTime} น.</b></div>
+      <div class="detailrow">เวลาปัจจุบัน (จะออกเวร) <b class="mono">${r.outTime} น.</b></div>
+      <div class="detailrow">เวรสิ้นสุดตามกำหนด <b class="mono">${r.shiftEnd} น.</b></div>
+    </div>
+    <label>สาเหตุการออกเวรก่อนเวลา *</label>
+    <select id="erSel"><option value="">— เลือกสาเหตุ —</option>
+      <option>ป่วย / เหตุฉุกเฉินส่วนตัว</option><option>สลับเวรกับเพื่อน</option>
+      <option>ได้รับมอบหมายภารกิจอื่น</option><option value="other">อื่นๆ (ระบุ)</option></select>
+    <textarea id="erTxt" rows="2" class="mt hidden" placeholder="ระบุสาเหตุ"></textarea>
+    <button class="btn btn-red btn-block mt" onclick="submitEarly()">ยืนยันการออกเวรก่อนเวลา</button>
+    <button class="btn btn-ghost btn-block mt" onclick="closeModal()">ยกเลิก (อยู่เวรต่อ)</button>`);
+  $('erSel').onchange = () => $('erTxt').classList.toggle('hidden', $('erSel').value !== 'other');
+}
+function submitEarly() {
+  let reason = $('erSel').value;
+  if (reason === 'other') reason = $('erTxt').value.trim();
+  if (!reason) return toast('กรุณาเลือกหรือระบุสาเหตุ');
+  closeModal(); doCheckout('ออกก่อนเวลา: ' + reason);
+}
+function finishCheckout(r) {
+  stopTracking();
+  DUTY = null; localStorage.removeItem('rs_duty'); excursionReported = false;
+  refreshDutyUI();
+  modal(`<h3>✅ ออกเวรเรียบร้อย</h3>
+    <div class="detailrow">เข้าเวร <b class="mono">${r.inTime} น.</b></div>
+    <div class="detailrow">ออกเวร <b class="mono">${r.outTime} น.</b></div>
+    <div class="detailrow">รวมเวลาปฏิบัติงาน <b class="mono">${r.hours} ชม.</b> ${r.early ? '<span class="chip c-out">ออกก่อนเวลา</span>' : ''}</div>
+    <button class="btn btn-navy btn-block mt" onclick="closeModal()">ปิด</button>`);
+}
+
+function refreshDutyUI() {
+  const on = DUTY && DUTY.on;
+  const b = $('bigBtn');
+  b.className = 'bigbtn ' + (on ? 'out' : 'in');
+  $('bigWrap').classList.toggle('onduty', !!on);
+  $('bigTxt').textContent = on ? 'เช็คเอาท์' : 'เช็คอิน';
+  $('bigSub').textContent = on ? 'แตะเพื่อออกเวร' : 'ถ่ายรูป + บันทึกพิกัด';
+  $('dutyShiftLabel').textContent = on ? DUTY.label : 'พร้อมเข้าเวร — แตะปุ่มเพื่อเช็คอิน';
+  $('dutyDetail').innerHTML = on
+    ? `<span class="chip c-on">กำลังปฏิบัติงาน</span>
+       <div class="mt">เวรวันที่ <b>${DUTY.shiftDate}</b> · ${DUTY.label}<br>
+       เช็คอินเวลา <b class="mono">${DUTY.inTime} น.</b> · สิ้นสุดเวร <b class="mono">${DUTY.end} น.</b>
+       ${DUTY.count > 1 ? '<br>⚠ เช็คอินครั้งที่ ' + DUTY.count + ' ของเวรนี้' : ''}</div>`
+    : 'ยังไม่ได้เช็คอิน';
+  $('dutyInfo').textContent = on ? '📡 ระบบกำลังบันทึกพิกัดของคุณจนกว่าจะเช็คเอาท์' : '';
+}
+/* กันกรณีปิดแอปแล้วเปิดใหม่ระหว่างเวร */
+async function syncMyDuty() {
+  const r = await api('myinfo', {}, true);
+  if (!r.ok) return;
+  if (r.data.duty) {
+    DUTY = { on: true, shiftDate: r.data.duty.shiftDate, type: r.data.duty.type, label: r.data.duty.label,
+             inTime: r.data.duty.inTime, end: r.data.duty.end, count: r.data.duty.checkinCount };
+    localStorage.setItem('rs_duty', JSON.stringify(DUTY));
+    refreshDutyUI(); startTracking();
+  } else if (DUTY) { DUTY = null; localStorage.removeItem('rs_duty'); refreshDutyUI(); }
+}
+
+/* ---------- แดชบอร์ด ---------- */
+async function loadBoard() {
+  const r = await api('board', {}, true);
+  if (!r.ok) return;
+  $('boardShift').textContent = `เวรวันที่ ${r.shift.date} · ${r.shift.label}`;
+  $('boardTime').textContent = 'อัปเดตอัตโนมัติทุก 30 วินาที · เวลาเซิร์ฟเวอร์ ' + r.serverTime;
+  const onDuty = r.people.filter(p => p.status !== 'off');
+  $('onCount').textContent = onDuty.length + ' คน';
+
+  // แบนเนอร์ออกเหตุ
+  let bn = '';
+  if (r.dispatch) {
+    if (r.dispatch.status === 'pending')
+      bn = `<div class="banner b-red"><b>🚨 มีการแจ้งออกเหตุ โดย ${r.dispatch.by}</b>
+            <button class="btn btn-ghost" onclick="confirmDisp('${r.dispatch.eventId}')">ยืนยันออกปฏิบัติงาน</button></div>`;
+    else
+      bn = `<div class="banner b-red"><b>🚨 ทุกคนในเวรกำลังออกปฏิบัติงาน</b>
+            <span style="font-size:12.5px;opacity:.85">แจ้งโดย ${r.dispatch.by} · ยืนยันโดย ${r.dispatch.confirmedBy} · ${r.dispatch.time} น.</span>
+            <button class="btn btn-ghost" onclick="endDisp()">ปิดเหตุ / กลับศูนย์</button></div>`;
+  }
+  $('dispatchBanner').innerHTML = bn;
+  $('dispatchBannerDuty').innerHTML = bn;
+
+  if (!r.people.length) { $('peopleGrid').innerHTML = '<div class="skel">ยังไม่มีผู้เช็คอินในเวรนี้</div>'; return; }
+  const chip = { on: '<span class="chip c-on">ปฏิบัติงาน</span>', dispatch: '<span class="chip c-disp">ออกเหตุ</span>',
+                 outside: '<span class="chip c-out">นอกพื้นที่ศูนย์</span>', off: '<span class="chip c-off">ออกเวรแล้ว</span>' };
+  $('peopleGrid').innerHTML = r.people.map(p => `
+    <div class="person st-${p.status}">
+      ${p.selfieUrl ? `<img class="avatar" src="${p.selfieUrl}" alt="${p.name}" loading="lazy" referrerpolicy="no-referrer">`
+                    : `<div class="avatar" style="display:flex;align-items:center;justify-content:center;font-family:Kanit;font-size:26px;color:var(--navy)">${p.name.charAt(0)}</div>`}
+      <b>${p.name}</b>${chip[p.status]}
+      <div class="meta mono">เข้า ${p.firstIn} น. · ${p.hours} ชม.
+        ${p.checkinCount > 1 ? '<br>เช็คอิน ' + p.checkinCount + ' ครั้ง' : ''}
+        ${p.lastLoc && p.lastLoc.distanceM !== '' ? '<br>ห่างศูนย์ ' + fmtDist(Number(p.lastLoc.distanceM)) + ' (' + p.lastLoc.time + ')' : ''}
+        ${p.reason ? '<br>📝 ' + p.reason : ''}</div>
+    </div>`).join('');
+}
+
+/* ---------- สถิติ + ค่าตอบแทน ---------- */
+let statCache = null;
+async function loadStats() {
+  const m = $('statMonth').value;
+  $('statBody').innerHTML = '<tr><td colspan="5" class="skel">กำลังโหลด…</td></tr>';
+  const [st, pr] = await Promise.all([api('stats', { month: m }, true), api('payroll', { month: m }, true)]);
+  if (!st.ok || !pr.ok) { $('statBody').innerHTML = '<tr><td colspan="5" class="skel">โหลดไม่สำเร็จ</td></tr>'; return; }
+  statCache = st.data;
+  const p = pr.data;
+  $('payCards').innerHTML = `
+    <div class="stat"><div class="v">${p.budget.toLocaleString()}</div><div class="l">งบสนับสนุน อบต. (฿)</div></div>
+    <div class="stat alt"><div class="v">${p.totalUnits}</div><div class="l">เวรรวมทั้งเดือน${p.prorate ? ' (สัดส่วน ชม.)' : ''}</div></div>
+    <div class="stat alt"><div class="v">${p.ratePerShift.toLocaleString()}</div><div class="l">อัตราต่อเวร (฿)</div></div>`;
+  const payMap = {}; p.users.forEach(u => payMap[u.userId] = u.pay);
+  if (!st.data.users.length) { $('statBody').innerHTML = '<tr><td colspan="5" class="skel">ไม่มีข้อมูลเดือนนี้</td></tr>'; return; }
+  $('statBody').innerHTML = st.data.users.map(u => `
+    <tr onclick="showDetail('${u.userId}')"><td><b>${u.name}</b>${u.reCheckins ? ' <span class="chip c-out">เช็คอินซ้ำ ' + u.reCheckins + ' เวร</span>' : ''}</td>
+    <td class="num mono">${u.shifts}</td><td class="num mono">${u.hours}</td>
+    <td class="num mono" style="color:${u.incomplete ? 'var(--red)' : 'inherit'}">${u.incomplete}</td>
+    <td class="num mono"><b>${(payMap[u.userId] || 0).toLocaleString()}</b></td></tr>`).join('');
+}
+function showDetail(uid) {
+  const u = statCache.users.find(x => x.userId === uid); if (!u) return;
+  modal(`<h3>${u.name} — รายเวร ${statCache.month}</h3>` + u.detail.map(d => `
+    <div class="detailrow"><b>${d.shiftDate}</b> ${d.shiftType === 'day' ? 'กะเช้า' : 'กะบ่าย'} ·
+      <span class="mono">เข้า ${d.inTime} / ออก ${d.outTime} · ${d.hours} ชม.</span>
+      ${d.checkinCount > 1 ? ` <span class="chip c-out">เช็คอิน ${d.checkinCount} ครั้ง</span>` : ''}
+      ${d.incomplete ? ' <span class="chip c-disp">ไม่ครบเวร</span>' : ''}
+      ${d.reason ? `<div class="muted">📝 ${d.reason}</div>` : ''}</div>`).join('') +
+    `<button class="btn btn-ghost btn-block mt" onclick="closeModal()">ปิด</button>`);
+}
+
+/* ---------- ของฉัน ---------- */
+async function loadMe() {
+  const r = await api('myinfo', { month: $('meMonth').value }, true);
+  if (!r.ok) return;
+  const d = r.data, me = d.me;
+  $('meCards').innerHTML = `
+    <div class="stat"><div class="v">${me.shifts}</div><div class="l">เวรที่เข้า</div></div>
+    <div class="stat alt"><div class="v">${me.hours}</div><div class="l">ชั่วโมงรวม</div></div>
+    <div class="stat alt"><div class="v">${d.pay.toLocaleString()}</div><div class="l">ค่าเวรโดยประมาณ (฿)</div></div>`;
+  $('meDuty').innerHTML = d.duty
+    ? `<span class="chip c-on">กำลังเข้าเวร</span> ${d.duty.label} เข้าเมื่อ ${d.duty.inTime} น.` : '';
+  $('meDetail').innerHTML = me.detail.length ? me.detail.map(x => `
+    <div class="detailrow"><b>${x.shiftDate}</b> ${x.shiftType === 'day' ? 'กะเช้า' : 'กะบ่าย'} ·
+      <span class="mono">เข้า ${x.inTime} / ออก ${x.outTime} · ${x.hours} ชม.</span>
+      ${x.checkinCount > 1 ? ` <span class="chip c-out">เช็คอิน ${x.checkinCount} ครั้ง</span>` : ''}
+      ${x.incomplete ? ' <span class="chip c-disp">ไม่ครบเวร</span>' : ''}
+      ${x.reason ? `<div class="muted">📝 ${x.reason}</div>` : ''}</div>`).join('')
+    : '<div class="muted">ยังไม่มีเวรในเดือนนี้</div>';
+}
+async function loadHist() {
+  $('histList').innerHTML = '<div class="skel">กำลังโหลด…</div>';
+  const r = await api('history', { date: $('histDate').value });
+  if (!r.ok) return $('histList').textContent = 'โหลดไม่สำเร็จ';
+  $('histList').innerHTML = r.data.length ? r.data.map(p => `
+    <div class="detailrow mono">${p.time} น. · ${Number(p.lat).toFixed(5)}, ${Number(p.lng).toFixed(5)}
+      ${p.distanceM !== '' ? ' · ห่างศูนย์ ' + fmtDist(Number(p.distanceM)) : ''}
+      <a href="https://maps.google.com/?q=${p.lat},${p.lng}" target="_blank" style="color:var(--navy)">🗺 แผนที่</a></div>`).join('')
+    : '<div class="muted">ไม่มีบันทึกพิกัดวันนี้</div>';
+}
+
+/* ---------- แอดมิน ---------- */
+async function loadAdmin() {
+  const [st, us] = await Promise.all([api('getSettings', {}, true), api('listUsers', {}, true)]);
+  if (st.ok) {
+    const s = st.data, m = $('adBudgetMonth').value;
+    $('adBudget').value = s['budget_' + m] || '';
+    $('adLat').value = s.baseLat || ''; $('adLng').value = s.baseLng || '';
+    $('adRadius').value = s.radiusM || 300;
+    $('adProrate').checked = String(s.prorate) === '1';
+    $('adBudgetMonth').onchange = () => { $('adBudget').value = s['budget_' + $('adBudgetMonth').value] || ''; };
+  }
+  if (us.ok) renderUsers(us.data);
+}
+function renderUsers(list) {
+  window._users = list;
+  $('userBody').innerHTML = list.map((u, i) => `
+    <tr onclick="editUser(${i})"><td class="mono">${u.id}</td><td>${u.name}</td>
+    <td>${u.role === 'admin' ? '👑 แอดมิน' : 'เจ้าหน้าที่'}</td><td style="color:var(--navy)">แก้ไข ›</td></tr>`).join('');
+}
+function editUser(i) {
+  const u = i === undefined ? { id: '', pin: '', name: '', role: 'staff', phone: '' } : window._users[i];
+  const isNew = i === undefined;
+  modal(`<h3>${isNew ? 'เพิ่มเจ้าหน้าที่' : 'แก้ไข: ' + u.name}</h3>
+    <label>รหัสประจำตัว (ID)</label><input id="uId" value="${u.id}" ${isNew ? '' : 'readonly'} placeholder="เช่น r001">
+    <label>ชื่อ-สกุล</label><input id="uName" value="${u.name}">
+    <label>PIN</label><input id="uPin" value="${u.pin}" inputmode="numeric">
+    <label>โทรศัพท์</label><input id="uPhone" value="${u.phone}">
+    <label>สิทธิ์</label><select id="uRole"><option value="staff" ${u.role !== 'admin' ? 'selected' : ''}>เจ้าหน้าที่</option>
+      <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>แอดมิน</option></select>
+    <button class="btn btn-navy btn-block mt" onclick="saveUserSubmit()">บันทึก</button>
+    ${isNew ? '' : `<button class="btn btn-ghost btn-block mt" style="color:var(--red)" onclick="delUser('${u.id}')">ลบผู้ใช้นี้</button>`}`);
+}
+async function saveUserSubmit() {
+  const d = { id: $('uId').value.trim(), name: $('uName').value.trim(), pin: $('uPin').value.trim(),
+              phone: $('uPhone').value.trim(), role: $('uRole').value };
+  if (!d.id || !d.name || !d.pin) return toast('กรอก ID / ชื่อ / PIN ให้ครบ');
+  const r = await api('saveUser', { data: d });
+  if (r.ok) { toast('บันทึกแล้ว'); closeModal(); loadAdmin(); }
+}
+async function delUser(id) {
+  if (!confirm('ลบผู้ใช้ ' + id + ' ?')) return;
+  const r = await api('deleteUser', { userId: id });
+  if (r.ok) { toast('ลบแล้ว'); closeModal(); loadAdmin(); }
+}
+async function useHere() {
+  try { const p = await getPos(); $('adLat').value = p.lat.toFixed(6); $('adLng').value = p.lng.toFixed(6); toast('ใช้พิกัดปัจจุบันแล้ว'); }
+  catch (e) { toast(e); }
+}
+async function saveAdminSettings() {
+  const m = $('adBudgetMonth').value;
+  const data = { baseLat: $('adLat').value, baseLng: $('adLng').value,
+                 radiusM: $('adRadius').value || 300, prorate: $('adProrate').checked ? '1' : '0' };
+  if ($('adBudget').value !== '') data['budget_' + m] = $('adBudget').value;
+  const r = await api('saveSettings', { data });
+  if (r.ok) toast('บันทึกการตั้งค่าแล้ว');
+}
+async function loadEvents() {
+  const r = await api('events', { month: $('evMonth').value }, true);
+  if (!r.ok) return;
+  const label = { dispatch: '🚨 ออกเหตุ', mission: '🚑 ธุระหน่วย', personal: '🚶 ธุระส่วนตัว', other: '✏️ อื่นๆ' };
+  $('evList').innerHTML = r.data.length ? r.data.map(e => `
+    <div class="detailrow"><b>${label[e.type] || e.type}</b> — ${e.name} <span class="muted mono">${e.time} น.</span>
+      ${e.detail ? '<div class="muted">' + e.detail + '</div>' : ''}
+      ${e.type === 'dispatch' ? `<div class="muted">สถานะ: ${e.status === 'confirmed' ? 'ยืนยันโดย ' + e.confirmedBy : e.status === 'closed' ? 'ปิดเหตุแล้ว' : 'รอยืนยัน'}</div>` : ''}</div>`).join('')
+    : '<div class="muted">ไม่มีเหตุการณ์ในเดือนนี้</div>';
+}
+
+/* ---------- init ---------- */
+window.addEventListener('load', () => {
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  if (API_URL.indexOf('http') !== 0) { toast('⚠ ยังไม่ได้ตั้งค่า API_URL ในไฟล์ index.html', 6000); }
+  if (S) enterApp();
+});
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && DUTY && DUTY.on) sendPing();
+});
+$('liPin') && $('liPin').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>

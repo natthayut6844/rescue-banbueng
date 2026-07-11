@@ -1,0 +1,15 @@
+{
+  "name": "เวรกู้ชีพกู้ภัย ตำบลบ้านบึง",
+  "short_name": "เวรกู้ชีพ",
+  "description": "ระบบบันทึกการเข้าเวรปฏิบัติงาน หน่วยกู้ชีพกู้ภัยตำบลบ้านบึง",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#17356B",
+  "theme_color": "#17356B",
+  "lang": "th",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
