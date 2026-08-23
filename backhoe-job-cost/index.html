@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5ead8">
+<title>คิดต้นทุนงานดิน — ขุดดิน ถมดิน รถแบ็คโฮ</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;600;700&family=Bai+Jamjuree:wght@600;700&family=IBM+Plex+Sans+Thai+Looped:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════ Design tokens — Organic ══════════ */
+:root{
+  --bg:#f5ead8; --surface:#ebddc5; --text:#201e1d;
+  --n100:#f9f4ed; --n200:#eee7db; --n300:#dcd3c4; --n400:#c0b6a5; --n500:#a19786;
+  --n600:#82796a; --n700:#645c50; --n800:#474238; --n900:#2e2b25;
+  --a:#c67139; --a100:#fff2eb; --a200:#ffe1d0; --a300:#ffc6a5; --a400:#f6a06b;
+  --a500:#d67f48; --a600:#b2622d; --a700:#8c491a; --a800:#643312;
+  --g100:#f0fae1; --g200:#e1eecc; --g300:#ccdbb2; --g400:#aebf92; --g500:#8fa073;
+  --g600:#728157; --g700:#56633f; --g800:#3d472b;
+  --f-head:'Caprasimo','Bai Jamjuree',sans-serif;
+  --f-body:'Figtree','IBM Plex Sans Thai Looped',system-ui,sans-serif;
+  --r-sm:8px; --r-md:16px; --r-lg:28px;
+  --sh-sm:0 1px 2px rgba(46,43,37,.14); --sh-md:0 3px 10px rgba(46,43,37,.16); --sh-lg:0 12px 32px rgba(46,43,37,.22);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{height:100%}
+body{min-height:100%;background:var(--n300);font-family:var(--f-body);color:var(--text);
+  font-size:15px;line-height:1.55;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+body.dark{background:#1f1d18}
+#phone{max-width:430px;margin:0 auto;min-height:100vh;min-height:100dvh;background:var(--bg);
+  display:flex;flex-direction:column;position:relative;box-shadow:0 0 40px rgba(46,43,37,.25)}
+body.dark #phone{background:var(--n900)}
+button{font-family:inherit;font-size:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:16px;color:var(--text);width:100%;
+  background:var(--n100);border:1px solid rgba(32,30,29,.16);border-radius:999px;
+  padding:11px 16px;min-height:46px}
+textarea{border-radius:var(--r-md);min-height:70px}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2382796a' stroke-width='2.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+h1,h2,h3{line-height:1.15}
+.th-head{font-family:'Bai Jamjuree',var(--f-head);font-weight:700}
+.num{font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.num6{font-weight:600;font-variant-numeric:tabular-nums}
+.profit{color:var(--g700)} .loss{color:var(--a800)}
+.muted{color:var(--n600)}
+
+/* ══════════ layout ══════════ */
+main{flex:1;overflow-y:auto;padding:0 16px;padding-bottom:170px;-webkit-overflow-scrolling:touch}
+.appbar{padding:14px 16px 10px;display:flex;align-items:flex-start;gap:10px}
+.appbar .team{font-size:12px;font-weight:600;color:var(--n600);letter-spacing:.04em}
+.appbar h1{font-size:20px}
+.appbar .right{margin-left:auto;text-align:right}
+.appbar .right .lbl{font-size:12px;color:var(--n600)}
+.appbar .right .val{font-size:18px}
+.backbar{display:flex;align-items:center;gap:8px;padding:12px 16px 8px}
+.backbar button.bk{width:46px;height:46px;border-radius:999px;background:var(--n100);box-shadow:var(--sh-sm);
+  display:flex;align-items:center;justify-content:center;flex:none}
+.backbar h1{font-size:20px}
+.backbar .sub{font-size:13px;color:var(--n600)}
+
+/* fixed bottom */
+#bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:50;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,var(--bg) 78%,rgba(245,234,216,0));display:flex;flex-direction:column;gap:10px}
+body.dark #bottom{background:linear-gradient(to top,var(--n900) 78%,rgba(46,43,37,0))}
+.cta{min-height:54px;border-radius:999px;background:var(--a);color:var(--bg);font-family:'Bai Jamjuree',sans-serif;
+  font-weight:700;font-size:17px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:var(--sh-md);width:100%}
+.cta:active{background:var(--a700)}
+.cta.secondary{background:var(--n100);color:var(--text);border:1px solid rgba(32,30,29,.16);box-shadow:none}
+.cta.secondary:active{background:var(--n200)}
+.ctarow{display:flex;gap:10px}
+.ctarow .cta{flex:1} .ctarow .cta.grow2{flex:2}
+.tabbar{display:flex;background:var(--n100);border-radius:999px;box-shadow:var(--sh-md);padding:6px}
+body.dark .tabbar{background:var(--n800)}
+.tab{flex:1;min-height:50px;border-radius:999px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;font-size:12px;font-weight:600;color:var(--n600)}
+body.dark .tab{color:var(--n400)}
+.tab svg{width:21px;height:21px}
+.tab.on{background:var(--a);color:var(--bg)}
+body.dark .tab.on{background:transparent;color:var(--a400)}
+
+/* ══════════ cards & bits ══════════ */
+.card{background:var(--n100);border-radius:var(--r-lg);padding:17px;box-shadow:var(--sh-md);margin-bottom:13px}
+.card h2{font-size:16px;margin-bottom:10px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;padding:4px 12px;border-radius:999px;background:var(--surface);color:var(--n700)}
+.chip.acc{background:var(--a200);color:var(--a800)}
+.chip.grn{background:var(--g200);color:var(--g800)}
+.chip.dash{background:none;border:1.5px dashed var(--n400);color:var(--n600);font-weight:500}
+.pillrow{display:flex;gap:6px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--surface);border-radius:999px;padding:3px;gap:2px}
+.seg button{padding:7px 13px;min-height:38px;border-radius:999px;font-size:13px;font-weight:600;color:var(--n700)}
+.seg button.on{background:var(--a);color:var(--bg)}
+.ratio{height:10px;border-radius:999px;display:flex;overflow:hidden;background:var(--n300);margin:10px 0 6px}
+.ratio i{display:block;height:100%}
+.legend{font-size:12px;color:var(--n600)}
+.sumrow{display:flex;border-top:1px solid var(--n300);margin-top:12px;padding-top:10px}
+.sumrow>div{flex:1;text-align:center}
+.sumrow>div+div{border-left:1px solid var(--n300)}
+.sumrow .l{font-size:12px;color:var(--n600)}
+.sumrow .v{font-size:18px}
+.warn{display:flex;align-items:center;gap:9px;background:var(--a100);border-radius:var(--r-md);padding:10px 13px;margin-top:11px;font-size:14px;color:var(--a800)}
+.warn i{width:9px;height:9px;border-radius:50%;background:var(--a);flex:none}
+.line{display:flex;align-items:flex-start;gap:8px;padding:9px 0;border-bottom:1px solid var(--n200)}
+.line:last-child{border-bottom:0}
+.line .nm{font-size:16px;font-weight:500}
+.line .sub{font-size:13px;color:var(--n600)}
+.line .sub.grn{color:var(--g700);font-weight:600}
+.line .amt{margin-left:auto;font-size:16px;white-space:nowrap}
+.total{display:flex;border-top:2px solid var(--text);margin-top:8px;padding-top:9px;font-weight:700}
+.total .amt{margin-left:auto}
+.darkcard{background:var(--n900);color:var(--n100);border-radius:var(--r-lg);padding:20px 17px;box-shadow:var(--sh-lg);margin-bottom:13px}
+.darkcard .l{font-size:13px;color:var(--n400)}
+.field{margin-bottom:12px}
+.field>label{display:block;font-size:13px;font-weight:600;color:var(--n700);margin-bottom:5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:13px}
+.stat{background:var(--n100);border-radius:var(--r-md);box-shadow:var(--sh-sm);padding:11px 8px;text-align:center}
+.stat.acc{background:var(--a100)}
+.stat .v{font-size:17px}
+.stat .l{font-size:12px;color:var(--n600)}
+.link{color:var(--a700);font-size:14px;font-weight:600;background:none;padding:4px 0}
+.bars{display:flex;align-items:flex-end;gap:7px;height:74px;margin-top:14px}
+.bars .b{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end;height:100%}
+.bars .b i{display:block;width:100%;border-radius:6px 6px 3px 3px;background:var(--n700);min-height:3px}
+.bars .b.now i{background:var(--a400)}
+.bars .b span{font-size:10.5px;color:var(--n500)}
+.checkrow{display:flex;align-items:center;gap:10px;min-height:46px;font-size:15px}
+.checkrow input[type=checkbox]{width:22px;height:22px;min-height:0;accent-color:var(--a);flex:none}
+.toastwrap{position:fixed;left:50%;transform:translateX(-50%);bottom:150px;z-index:99}
+.toast{background:var(--n900);color:var(--n100);padding:10px 18px;border-radius:999px;font-size:14px;box-shadow:var(--sh-lg);white-space:nowrap}
+dialog{border:0;border-radius:var(--r-lg);padding:20px 17px;background:var(--n100);box-shadow:var(--sh-lg);
+  width:min(400px,calc(100vw - 40px));max-height:86vh;overflow-y:auto;margin:auto}
+dialog::backdrop{background:rgba(46,43,37,.5)}
+dialog h2{font-size:18px;margin-bottom:12px}
+
+/* ══════════ voice (dark) ══════════ */
+.micwrap{display:flex;flex-direction:column;align-items:center;padding:26px 0 10px}
+.mic{width:150px;height:150px;border-radius:50%;background:var(--a);position:relative;display:flex;
+  align-items:center;justify-content:center;box-shadow:0 0 0 12px rgba(198,113,57,.22),0 0 0 26px rgba(198,113,57,.11)}
+.mic:active{background:var(--a600)}
+.mic.rec{animation:micpulse 1.4s ease-in-out infinite}
+@keyframes micpulse{0%,100%{box-shadow:0 0 0 12px rgba(198,113,57,.22),0 0 0 26px rgba(198,113,57,.11)}50%{box-shadow:0 0 0 18px rgba(198,113,57,.3),0 0 0 36px rgba(198,113,57,.14)}}
+.wave{display:flex;gap:5px;align-items:center;height:44px}
+.wave i{width:6px;border-radius:99px;background:var(--bg)}
+.wave i:nth-child(1){height:16px}.wave i:nth-child(2){height:30px}.wave i:nth-child(3){height:42px}
+.wave i:nth-child(4){height:26px}.wave i:nth-child(5){height:14px}
+.mic.rec .wave i{animation:wv .9s ease-in-out infinite alternate}
+.mic.rec .wave i:nth-child(2){animation-delay:.12s}.mic.rec .wave i:nth-child(3){animation-delay:.24s}
+.mic.rec .wave i:nth-child(4){animation-delay:.36s}.mic.rec .wave i:nth-child(5){animation-delay:.48s}
+@keyframes wv{from{transform:scaleY(.5)}to{transform:scaleY(1.15)}}
+.spoken{background:var(--n800);color:var(--n100);border-radius:var(--r-lg);padding:15px 17px;font-size:16px;margin:16px 0 13px;min-height:56px}
+.spoken .lbl{font-size:12px;color:var(--n400);margin-bottom:4px}
+.darklist .line{border-color:var(--n800)}
+.creamcard{background:var(--n100);color:var(--text);border-radius:var(--r-lg);padding:17px;box-shadow:var(--sh-lg);margin-bottom:13px}
+
+@media (min-width:500px){ body{padding:0 0 0} }
+</style>
+</head>
+<body>
+<div id="phone">
+  <main id="main"></main>
+</div>
+<div id="bottom"></div>
+<div class="toastwrap" id="toastwrap"></div>
+<dialog id="dlg"></dialog>
+
+<script>
+'use strict';
+/* ═══════════════════ utils ═══════════════════ */
+const $=s=>document.querySelector(s);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>{n=Math.round(n||0);return n<0?'−'+Math.abs(n).toLocaleString('en-US'):n.toLocaleString('en-US')};
+const fmtQ=n=>{n=+(n||0);const r=Math.round(n*10)/10;return r%1?r.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1}):r.toLocaleString('en-US')};
+const THM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const THMF=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+const iso=d=>{const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};
+const today=()=>iso(new Date());
+const thD=s=>{if(!s)return'';const[y,m,d]=s.split('-').map(Number);return d+' '+THM[m-1]};
+const thDY=s=>{if(!s)return'';const[y,m,d]=s.split('-').map(Number);return d+' '+THM[m-1]+' '+String(y+543).slice(-2)};
+const thMY=mk=>{const[y,m]=mk.split('-').map(Number);return THMF[m-1]+' '+(y+543)};
+const mkOf=s=>s?s.slice(0,7):'';
+const nowMk=()=>today().slice(0,7);
+const addMonths=(mk,n)=>{let[y,m]=mk.split('-').map(Number);m+=n;while(m<1){m+=12;y--}while(m>12){m-=12;y++}return y+'-'+String(m).padStart(2,'0')};
+const daysAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return iso(d)};
+const UNITL={hour:'ชม.',day:'วัน',trip:'เที่ยว',lump:'เหมา',cubic:'คิว',ton:'ตัน',person_day:'คน/วัน',month:'เดือน',per_job:'ครั้งซ่อม'};
+const UNITSEL={day:'รายวัน',hour:'รายชั่วโมง',trip:'รายเที่ยว',month:'รายเดือน',per_job:'ตามงานซ่อม',person_day:'คน/วัน'};
+const REVL={per_trip:'เหมาต่อเที่ยว',per_cubic:'เหมาต่อคิว',per_ton:'ต่อตัน',hourly:'ค่าเช่ารายชั่วโมง',daily:'ค่าเช่ารายวัน',lump_sum:'เหมาทั้งงาน'};
+const KINDL={fuel:'น้ำมันดีเซล',machine:'ค่าเช่ารถร่วม/รถบรรทุก',transport:'ค่าขนย้ายรถ',repair:'ค่าซ่อม/อะไหล่',oil:'น้ำมันเครื่อง–จาระบี',material:'ค่าดินถม/วัสดุ',commission:'ค่าตัดงาน–นายหน้า',other:'อื่น ๆ'};
+const KINDK={dumptruck:'สิบล้อ',backhoe:'แบ็คโฮ',mini_backhoe:'แบ็คโฮเล็ก',dozer:'รถไถ',roller:'รถบด',grader:'รถเกรด',watertruck:'รถบรรทุกน้ำ',trailer:'เทรลเลอร์'};
+
+/* ═══════════════════ store ═══════════════════ */
+const LSKEY='backhoe_job_cost_v1';
+let db=null, dirty=new Set();
+function touch(rec){rec.updatedAt=Date.now();return rec}
+function save(){localStorage.setItem(LSKEY,JSON.stringify(db))}
+function load(){try{const s=localStorage.getItem(LSKEY);if(s)return JSON.parse(s)}catch(e){}return null}
+function markDirty(kind,id){dirty.add(kind+':'+id);db.dirty=[...dirty];save()}
+
+function seed(){
+  const mk=nowMk();
+  const D=d=>mk+'-'+String(d).padStart(2,'0');
+  const lastMk=addMonths(mk,-1);
+  const t=Date.now();
+  const machines=[
+    {id:'mc_t1',nickname:'สิบล้อ 1',model:'',kind:'dumptruck',capacityCubic:12,hourMeter:0,oilChangeIntervalHours:0,lastOilChangeHours:0,ownedByTeam:true},
+    {id:'mc_t2',nickname:'สิบล้อ 2',model:'',kind:'dumptruck',capacityCubic:12,hourMeter:0,oilChangeIntervalHours:0,lastOilChangeHours:0,ownedByTeam:true},
+    {id:'mc_t3',nickname:'สิบล้อ 3',model:'',kind:'dumptruck',capacityCubic:12,hourMeter:0,oilChangeIntervalHours:0,lastOilChangeHours:0,ownedByTeam:true},
+    {id:'mc_t4',nickname:'สิบล้อ 4',model:'',kind:'dumptruck',capacityCubic:12,hourMeter:0,oilChangeIntervalHours:0,lastOilChangeHours:0,ownedByTeam:true},
+    {id:'mc_t5',nickname:'สิบล้อ 5',model:'',kind:'dumptruck',capacityCubic:12,hourMeter:0,oilChangeIntervalHours:0,lastOilChangeHours:0,ownedByTeam:true},
+    {id:'mc_b1',nickname:'แบ็คโฮใหญ่',model:'PC120',kind:'backhoe',hourMeter:8742,oilChangeIntervalHours:250,lastOilChangeHours:8550,ownedByTeam:true},
+    {id:'mc_b2',nickname:'แบ็คโฮ 2',model:'PC200',kind:'backhoe',hourMeter:6120,oilChangeIntervalHours:250,lastOilChangeHours:6010,ownedByTeam:true},
+    {id:'mc_b3',nickname:'แบ็คโฮ 3',model:'PC130',kind:'backhoe',hourMeter:4310,oilChangeIntervalHours:250,lastOilChangeHours:4180,ownedByTeam:true},
+    {id:'mc_b4',nickname:'แบ็คโฮ 4',model:'PC60',kind:'backhoe',hourMeter:9905,oilChangeIntervalHours:250,lastOilChangeHours:9720,ownedByTeam:true},
+    {id:'mc_b5',nickname:'แบ็คโฮเล็ก',model:'PC30',kind:'mini_backhoe',hourMeter:2140,oilChangeIntervalHours:200,lastOilChangeHours:2005,ownedByTeam:true},
+    {id:'mc_d1',nickname:'รถไถใหญ่',model:'D6',kind:'dozer',hourMeter:7300,oilChangeIntervalHours:250,lastOilChangeHours:7150,ownedByTeam:true},
+    {id:'mc_d2',nickname:'รถไถเล็ก',model:'D3',kind:'dozer',hourMeter:5210,oilChangeIntervalHours:250,lastOilChangeHours:5100,ownedByTeam:true},
+    {id:'mc_g1',nickname:'รถเกรด',model:'CAT140H',kind:'grader',hourMeter:11020,oilChangeIntervalHours:300,lastOilChangeHours:10890,ownedByTeam:true},
+    {id:'mc_w1',nickname:'รถบรรทุกน้ำ',model:'',kind:'watertruck',hourMeter:0,oilChangeIntervalHours:0,lastOilChangeHours:0,ownedByTeam:true},
+    {id:'mc_tr1',nickname:'เทรลเลอร์',model:'',kind:'trailer',hourMeter:0,oilChangeIntervalHours:0,lastOilChangeHours:0,ownedByTeam:true},
+  ];
+  const rates=[
+    {id:'rt_fore',key:'foreman',name:'คนคุมงาน',units:[{unit:'day',rate:500},{unit:'month',rate:15000}],selUnit:'day',note:''},
+    {id:'rt_truck',key:'truck_driver',name:'คนขับสิบล้อ',units:[{unit:'trip',rate:120},{unit:'day',rate:600}],selUnit:'trip',extraPerTrip:30,note:'5 คน · ระยะไกลบวกเที่ยวละ 30'},
+    {id:'rt_backhoe',key:'backhoe_driver',name:'คนขับแบ็คโฮ',units:[{unit:'day',rate:700},{unit:'hour',rate:150}],selUnit:'hour',note:'งานนี้เลือกรายชั่วโมง · สลับได้ทุกงาน'},
+    {id:'rt_dozer',key:'dozer_driver',name:'คนขับรถไถ',units:[{unit:'day',rate:600},{unit:'hour',rate:120}],selUnit:'day',note:''},
+    {id:'rt_mech',key:'mechanic',name:'ช่างซ่อมบำรุง',units:[{unit:'day',rate:800},{unit:'per_job',rate:800}],selUnit:'day',note:''},
+    {id:'rt_food',key:'food',name:'ค่ากินอยู่คนงาน',units:[{unit:'person_day',rate:100}],selUnit:'person_day',note:'100 / คน / วัน'},
+  ];
+  const materials=[
+    {id:'mat_ore',name:'ขี้แร่',tonPerCubic:1.6},
+    {id:'mat_fill',name:'ดินถม',tonPerCubic:1.5},
+    {id:'mat_rock',name:'หินคลุก',tonPerCubic:1.7},
+  ];
+  const customers=[
+    {id:'cu_yao',name:'ลุงยาว',place:'บ้านหนองบัว'},
+    {id:'cu_daeng',name:'ลุงแดง',place:'บ้านโคกสูง'},
+    {id:'cu_abt',name:'อบต.หนองแสง',place:'ต.หนองแสง'},
+  ];
+  const jobs=[
+    {id:'jb_yao',customerId:'cu_yao',title:'ถมที่ลุงยาว',place:'บ้านหนองบัว',startDate:D(12),endDate:D(14),status:'active',
+     revenueMode:'per_trip',revenueRate:900,materialId:'mat_ore',cubicPerTrip:12,dueDate:D(20),machineId:'mc_b1'},
+    {id:'jb_daeng',customerId:'cu_daeng',title:'ขุดสระลุงแดง',place:'บ้านโคกสูง',startDate:D(1),endDate:D(8),status:'active',
+     revenueMode:'lump_sum',lumpSumAmount:85000,materialId:'mat_fill',cubicPerTrip:12,machineId:'mc_b2'},
+    {id:'jb_rent',customerId:'cu_daeng',title:'ให้เช่าแบ็คโฮ PC120',place:'ไร่ลุงแดง',startDate:D(18),endDate:'',status:'active',
+     revenueMode:'hourly',revenueRate:1800,cubicPerTrip:12,machineId:'mc_b1'},
+    {id:'jb_abt',customerId:'cu_abt',title:'ถนนหินคลุก อบต.หนองแสง',place:'ต.หนองแสง',startDate:addMonths(mk,-1)+'-05',endDate:addMonths(mk,-1)+'-18',
+     status:'done',revenueMode:'lump_sum',lumpSumAmount:120000,materialId:'mat_rock',cubicPerTrip:12,dueDate:daysAgo(12)},
+  ];
+  // past months (for the 6-month chart)
+  const past=[[-5,68000,49500],[-4,92000,71400],[-3,60500,49800],[-2,110000,79000]];
+  past.forEach(([off,rev,cost],i)=>{
+    const pmk=addMonths(mk,off);
+    jobs.push({id:'jb_p'+i,customerId:'cu_daeng',title:'งานเก่าเดือน '+THM[+pmk.split('-')[1]-1],place:'',startDate:pmk+'-10',endDate:pmk+'-20',
+      status:'done',revenueMode:'lump_sum',lumpSumAmount:rev,cubicPerTrip:12,_histCost:cost});
+  });
+  const jobDays=[
+    {id:'jd_y1',jobId:'jb_yao',date:D(12),trips:18,hours:0,workers:4,fuelLitres:80,fuelBaht:0,mechanic:false,note:'',weather:''},
+    {id:'jd_y2',jobId:'jb_yao',date:D(13),trips:20,hours:0,workers:4,fuelLitres:0,fuelBaht:0,mechanic:true,note:'ช่างมาซ่อม',weather:''},
+    {id:'jd_y3',jobId:'jb_yao',date:D(14),trips:12,hours:0,workers:4,fuelLitres:0,fuelBaht:0,mechanic:false,note:'ฝนตกครึ่งวัน',weather:'ฝนตกครึ่งวัน'},
+    {id:'jd_r1',jobId:'jb_rent',date:D(18),trips:0,hours:9,workers:0,fuelLitres:0,fuelBaht:0,mechanic:false,note:'',weather:''},
+    {id:'jd_r2',jobId:'jb_rent',date:D(19),trips:0,hours:9,workers:0,fuelLitres:0,fuelBaht:0,mechanic:false,note:'',weather:''},
+    {id:'jd_r3',jobId:'jb_rent',date:D(20),trips:0,hours:8,workers:0,fuelLitres:0,fuelBaht:0,mechanic:false,note:'',weather:''},
+  ];
+  const L=(jobId,group,kind,label,unit,qty,rate,extra)=>Object.assign({id:uid(),jobId,jobDayId:null,group,kind,label,unit,qty,rate,amount:Math.round(qty*rate),includesDriver:false,machineId:null,rateKey:null,source:'manual'},extra||{});
+  const costLines=[
+    // ถมที่ลุงยาว — ค่ารถ 42,400 (ตาม worked example)
+    L('jb_yao','machine','machine','แบ็คโฮตักขึ้นสิบล้อ','hour',8,1800,{machineId:'mc_b1',own:true}),
+    L('jb_yao','machine','machine','รถเกรด CAT140H','day',1,15000,{machineId:'mc_g1',includesDriver:true}),
+    L('jb_yao','machine','machine','รถไถดันดิน','trip',50,100,{machineId:'mc_d1',own:true}),
+    L('jb_yao','machine','machine','รถบด','day',1,5000,{includesDriver:true}),
+    L('jb_yao','machine','transport','ค่าย้ายรถ (เทรลเลอร์)','lump',1,3000,{machineId:'mc_tr1'}),
+    // ถมที่ลุงยาว — ค่าแรง 12,500
+    L('jb_yao','labour','labour','คนคุมงาน','day',3,500,{rateKey:'foreman',source:'auto_from_rates'}),
+    L('jb_yao','labour','labour','คนขับสิบล้อ','trip',50,120,{rateKey:'truck_driver',source:'auto_from_rates'}),
+    L('jb_yao','labour','labour','คนขับแบ็คโฮ','hour',8,150,{rateKey:'backhoe_driver',source:'auto_from_rates',machineId:'mc_b1'}),
+    L('jb_yao','labour','labour','คนขับรถไถ','day',3,600,{rateKey:'dozer_driver',source:'auto_from_rates',machineId:'mc_d1'}),
+    L('jb_yao','labour','labour','ช่างซ่อมบำรุง','day',1,800,{rateKey:'mechanic',source:'auto_from_rates'}),
+    L('jb_yao','labour','food','ค่ากินอยู่คนงาน 4 คน × 3 วัน','person_day',12,100,{rateKey:'food',source:'auto_from_rates'}),
+    // ขุดสระลุงแดง — ทุน 65,500
+    L('jb_daeng','machine','fuel','น้ำมันดีเซล','lump',1,28500,{}),
+    L('jb_daeng','machine','machine','แบ็คโฮขุด PC200','day',8,2800,{machineId:'mc_b2',own:true}),
+    L('jb_daeng','machine','transport','ค่าย้ายรถ','lump',1,2600,{}),
+    L('jb_daeng','labour','labour','คนขับแบ็คโฮ','day',8,700,{rateKey:'backhoe_driver',machineId:'mc_b2'}),
+    L('jb_daeng','labour','labour','คนคุมงาน','day',6,500,{rateKey:'foreman'}),
+    L('jb_daeng','labour','food','ค่ากินอยู่คนงาน','person_day',34,100,{rateKey:'food'}),
+    // ให้เช่าแบ็คโฮ PC120 — ทุน 28,000
+    L('jb_rent','machine','fuel','น้ำมันดีเซล','lump',1,18100,{machineId:'mc_b1'}),
+    L('jb_rent','machine','transport','ค่าขนย้ายรถ (โลว์บอย)','lump',1,6000,{}),
+    L('jb_rent','labour','labour','คนขับแบ็คโฮ','hour',26,150,{rateKey:'backhoe_driver',machineId:'mc_b1'}),
+    // อบต.หนองแสง
+    L('jb_abt','machine','material','หินคลุก + ค่ารถ','lump',1,61000,{}),
+    L('jb_abt','labour','labour','ค่าแรงรวมงาน','lump',1,16000,{}),
+  ];
+  past.forEach(([off,rev,cost],i)=>{
+    const machinePart=Math.round(cost*.8), labourPart=cost-machinePart;
+    costLines.push(L('jb_p'+i,'machine','machine','ค่ารถรวมงาน','lump',1,machinePart,{}));
+    costLines.push(L('jb_p'+i,'labour','labour','ค่าแรงรวมงาน','lump',1,labourPart,{}));
+  });
+  const payments=[
+    {id:'py_y1',jobId:'jb_yao',date:D(14),amount:30000,note:'จ่ายงวดแรก'},
+    {id:'py_d1',jobId:'jb_daeng',date:D(8),amount:85000,note:'รับเงินครบ'},
+    {id:'py_r1',jobId:'jb_rent',date:D(20),amount:46800,note:''},
+    {id:'py_a1',jobId:'jb_abt',date:addMonths(mk,-1)+'-18',amount:77000,note:'งวดแรก'},
+  ];
+  past.forEach(([off,rev],i)=>payments.push({id:'py_p'+i,jobId:'jb_p'+i,date:addMonths(mk,off)+'-25',amount:rev,note:''}));
+  const d={
+    v:1,
+    team:{name:'ทีมรถขุดของเรา',targetMarginPct:20,cubicPerTripDefault:12},
+    settings:{apiUrl:'',teamCode:'',pin:'',lastSync:0},
+    machines,rates,materials,customers,jobs,jobDays,costLines,payments,
+    voiceNotes:[{id:'vn_demo',date:D(12),text:'10 ล้อมาส่ง ขี้แร่จากเหมือง 10 เที่ยว ลงหน้างานลุงยาว คนงาน 4 คน',saved:true}],
+    dirty:[]
+  };
+  [...machines,...rates,...materials,...customers,...jobs,...jobDays,...costLines,...payments].forEach(r=>r.updatedAt=t);
+  return d;
+}
+
+db=load();
+if(!db){db=seed();save()}
+dirty=new Set(db.dirty||[]);
+
+/* lookups */
+const jobById=id=>db.jobs.find(j=>j.id===id);
+const custOf=j=>db.customers.find(c=>c.id===j.customerId)||{name:'',place:''};
+const matOf=j=>db.materials.find(m=>m.id===j.materialId);
+const machById=id=>db.machines.find(m=>m.id===id);
+const rateByKey=k=>db.rates.find(r=>r.key===k);
+const rateVal=(r,unit)=>{const u=r.units.find(x=>x.unit===(unit||r.selUnit));return u?u.rate:0};
+const daysOf=j=>db.jobDays.filter(d=>d.jobId===j.id).sort((a,b)=>a.date<b.date?-1:1);
+const linesOf=j=>db.costLines.filter(l=>l.jobId===j.id);
+const paysOf=j=>db.payments.filter(p=>p.jobId===j.id);
+
+/* ═══════════════════ calc engine (§6) ═══════════════════ */
+function jobTrips(j){return daysOf(j).reduce((s,d)=>s+(+d.trips||0),0)}
+function jobHours(j){return daysOf(j).reduce((s,d)=>s+(+d.hours||0),0)}
+function jobDayCount(j){const ds=daysOf(j);if(ds.length)return ds.length;
+  if(j.startDate&&j.endDate){return Math.max(1,Math.round((new Date(j.endDate)-new Date(j.startDate))/864e5)+1)}return 1}
+function jobCubic(j){return jobTrips(j)*(+j.cubicPerTrip||db.team.cubicPerTripDefault||12)}
+function jobTon(j){const m=matOf(j);return jobCubic(j)*(m?+m.tonPerCubic:1.5)}
+function jobRevenue(j){
+  switch(j.revenueMode){
+    case 'per_trip': return jobTrips(j)*(+j.revenueRate||0);
+    case 'per_cubic':return jobCubic(j)*(+j.revenueRate||0);
+    case 'per_ton':  return jobTon(j)*(+j.revenueRate||0);
+    case 'hourly':   return jobHours(j)*(+j.revenueRate||0);
+    case 'daily':    return jobDayCount(j)*(+j.revenueRate||0);
+    case 'lump_sum': return +j.lumpSumAmount||0;
+  } return 0;
+}
+function machineCost(j){return linesOf(j).filter(l=>l.group==='machine').reduce((s,l)=>s+(+l.amount||0),0)}
+function labourCost(j){return linesOf(j).filter(l=>l.group==='labour').reduce((s,l)=>s+(+l.amount||0),0)}
+function jobCost(j){return machineCost(j)+labourCost(j)}
+function jobProfit(j){return jobRevenue(j)-jobCost(j)}
+function jobPct(j){const r=jobRevenue(j);return r>0?jobProfit(j)/r*100:0}
+function jobPaid(j){return paysOf(j).reduce((s,p)=>s+(+p.amount||0),0)}
+function jobDue(j){return Math.max(0,jobRevenue(j)-jobPaid(j))}
+function qtyLabel(j,unit){
+  const u=unit||'trip';
+  if(u==='cubic')return fmtQ(jobCubic(j))+' คิว';
+  if(u==='ton')return fmtQ(jobTon(j))+' ตัน';
+  return fmtQ(jobTrips(j))+' เที่ยว';
+}
+function dayRevenue(j,d){
+  const cpt=+j.cubicPerTrip||12, m=matOf(j), tpc=m?+m.tonPerCubic:1.5;
+  switch(j.revenueMode){
+    case 'per_trip': return (+d.trips||0)*(+j.revenueRate||0);
+    case 'per_cubic':return (+d.trips||0)*cpt*(+j.revenueRate||0);
+    case 'per_ton':  return (+d.trips||0)*cpt*tpc*(+j.revenueRate||0);
+    case 'hourly':   return (+d.hours||0)*(+j.revenueRate||0);
+    case 'daily':    return +j.revenueRate||0;
+    case 'lump_sum': {const n=daysOf(j).length||1;return (+j.lumpSumAmount||0)/n}
+  } return 0;
+}
+function monthStats(mk){
+  let rev=0,mach=0,lab=0;
+  db.jobs.forEach(j=>{
+    const ds=daysOf(j);
+    if(ds.length){ds.forEach(d=>{if(mkOf(d.date)===mk)rev+=dayRevenue(j,d)})}
+    else if(mkOf(j.startDate)===mk)rev+=jobRevenue(j);
+  });
+  db.costLines.forEach(l=>{
+    let lmk;
+    if(l.jobDayId){const d=db.jobDays.find(x=>x.id===l.jobDayId);lmk=d?mkOf(d.date):null}
+    if(!lmk){const j=jobById(l.jobId);lmk=j?mkOf(j.startDate):null}
+    if(lmk===mk){if(l.group==='machine')mach+=+l.amount||0;else lab+=+l.amount||0}
+  });
+  return {rev:Math.round(rev),mach,lab,profit:Math.round(rev-mach-lab)};
+}
+function oilLeft(m){if(!m.oilChangeIntervalHours)return null;return (+m.lastOilChangeHours+ +m.oilChangeIntervalHours)-(+m.hourMeter)}
+
+/* ═══════════════════ view state / router ═══════════════════ */
+let view={name:'jobs'};
+let stack=[];
+let unitPref={}; // jobId -> trip|cubic|ton
+let fleetTab='machines';
+let lastJobId=db.jobs.find(j=>j.status==='active')?.id||null;
+function go(v){stack.push(view);view=v;render();$('#main').scrollTop=0;window.scrollTo(0,0)}
+function back(){view=stack.pop()||{name:'jobs'};render()}
+function goTab(name){stack=[];view={name};render();window.scrollTo(0,0)}
+function toast(msg){const w=$('#toastwrap');w.innerHTML='<div class="toast">'+esc(msg)+'</div>';setTimeout(()=>w.innerHTML='',2600)}
+
+/* icons (lucide-style, stroke 2.75) */
+const IC={
+  jobs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="4"/><path d="M8 2v4M16 2v4M7 11h7M7 16h4"/></svg>',
+  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4"/></svg>',
+  money:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="3.5"/><circle cx="12" cy="12.5" r="2.6"/><path d="M5.5 10v5M18.5 10v5"/></svg>',
+  truck:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>',
+  back:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
+};
+
+/* ═══════════════════ shared UI ═══════════════════ */
+function tabbar(){
+  const tabs=[['jobs','งาน',IC.jobs],['voice','พูด',IC.mic],['money','เงิน',IC.money],['fleet','รถ-คน',IC.truck]];
+  const cur=['jobs','job','daylog','newjob'].includes(view.name)?'jobs'
+    :['voice','confirm'].includes(view.name)?'voice'
+    :['money'].includes(view.name)?'money':'fleet';
+  return '<div class="tabbar">'+tabs.map(([k,l,ic])=>
+    `<button class="tab ${cur===k?'on':''}" onclick="goTab('${k}')">${ic}<span>${l}</span></button>`).join('')+'</div>';
+}
+function ratioBar(j){
+  const rev=jobRevenue(j),mc=machineCost(j),lc=labourCost(j),pf=rev-mc-lc;
+  const base=Math.max(rev,mc+lc)||1;
+  const w=x=>Math.max(1.5,x/base*100).toFixed(1)+'%';
+  let seg=`<i style="width:${w(mc)};background:var(--a500)"></i><i style="width:${w(lc)};background:var(--g500)"></i>`;
+  seg+=pf>=0?`<i style="width:${w(pf)};background:var(--g700)"></i>`:`<i style="width:${w(-pf)};background:var(--a800)"></i>`;
+  return `<div class="ratio">${seg}</div><div class="legend">ค่ารถ ${fmt(mc)} · ค่าแรง ${fmt(lc)}</div>`;
+}
+function unitSeg(j,cls){
+  const u=unitPref[j.id]||'trip';
+  const opts=[['cubic',fmtQ(jobCubic(j))+' คิว'],['ton',fmtQ(jobTon(j))+' ตัน'],['trip',fmtQ(jobTrips(j))+' เที่ยว']];
+  return `<div class="seg ${cls||''}">`+opts.map(([k,l])=>
+    `<button class="num6 ${u===k?'on':''}" onclick="setUnit('${j.id}','${k}')">${l}</button>`).join('')+'</div>';
+}
+function setUnit(jid,u){unitPref[jid]=u;render()}
+
+/* ═══════════════════ screen: งาน (job board) ═══════════════════ */
+function scrJobs(){
+  const mk=nowMk(), ms=monthStats(mk);
+  const active=db.jobs.filter(j=>j.status==='active');
+  const doneRecent=db.jobs.filter(j=>j.status==='done'&&jobDue(j)>0);
+  let h=`<div class="appbar">
+    <div><div class="team">${esc(db.team.name)}</div><h1 class="th-head">งานที่ทำอยู่</h1></div>
+    <div class="right"><div class="lbl">เหลือเดือนนี้</div>
+      <div class="val num ${ms.profit<0?'loss':'profit'}">${fmt(ms.profit)}</div></div>
+  </div>`;
+  if(!active.length&&!doneRecent.length){
+    h+=`<div class="card" style="text-align:center;padding:36px 20px">
+      <div style="font-size:44px;margin-bottom:8px">🚜</div>
+      <h2 class="th-head">ยังไม่มีงาน</h2>
+      <p class="muted" style="font-size:14px">กดปุ่ม "ลงงานวันนี้" ข้างล่าง<br>หรือกด + สร้างงานใหม่ก่อน</p>
+      <button class="cta" style="margin-top:14px" onclick="go({name:'newjob'})">+ สร้างงานใหม่</button></div>`;
+  }
+  for(const j of [...active,...doneRecent]){
+    const rev=jobRevenue(j),cost=jobCost(j),pf=rev-cost,pct=jobPct(j),due=jobDue(j);
+    const c=custOf(j);
+    let statusChip;
+    if(due>0)statusChip=`<span class="chip acc num6">ค้างรับ ${fmt(due)}</span>`;
+    else if(jobPaid(j)>0)statusChip=`<span class="chip grn">รับเงินครบ</span>`;
+    else statusChip=j.revenueMode==='hourly'?`<span class="chip num6">${fmtQ(jobHours(j))} ชม.</span>`:`<span class="chip">กำลังทำ</span>`;
+    let priceChip='';
+    if(j.revenueMode==='per_trip')priceChip=`เที่ยวละ ${fmt(j.revenueRate)}`;
+    else if(j.revenueMode==='hourly')priceChip=`ชม.ละ ${fmt(j.revenueRate)}`;
+    else if(j.revenueMode==='daily')priceChip=`วันละ ${fmt(j.revenueRate)}`;
+    else if(j.revenueMode==='per_cubic')priceChip=`คิวละ ${fmt(j.revenueRate)}`;
+    else if(j.revenueMode==='per_ton')priceChip=`ตันละ ${fmt(j.revenueRate)}`;
+    else priceChip=`เหมา ${fmt(j.lumpSumAmount)}`;
+    const qchips=jobTrips(j)>0?`<span class="chip num6">${fmtQ(jobTrips(j))} เที่ยว · ${fmtQ(jobCubic(j))} คิว</span>`:'';
+    const range=(j.startDate?thD(j.startDate):'')+(j.endDate?'–'+thD(j.endDate):'');
+    const lowWarn=(pf>=0&&rev>0&&pct<db.team.targetMarginPct)?
+      `<div class="warn"><i></i>เหลือแค่ ${pct.toFixed(0)}% ต่ำกว่าเป้า ${db.team.targetMarginPct}% — ลองดูค่ารถกับค่าแรง</div>`:
+      (pf<0?`<div class="warn"><i></i>งานนี้ขาดทุนอยู่ ${fmt(Math.abs(pf))} บาท — เข้าไปดูว่าเงินหายตรงไหน</div>`:'');
+    h+=`<div class="card" onclick="go({name:'job',jobId:'${j.id}'})" style="cursor:pointer">
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        <div style="flex:1;min-width:0">
+          <div class="th-head" style="font-size:20px">${esc(j.title)}</div>
+          <div style="font-size:14px;color:var(--n600)">${esc(c.place||j.place||'')}${range?' · '+range:''}</div>
+        </div>${statusChip}</div>
+      <div class="pillrow" style="margin-top:9px"><span class="chip num6">${priceChip}</span>${qchips}</div>
+      ${ratioBar(j)}
+      <div class="sumrow">
+        <div><div class="l">รับ</div><div class="v num">${fmt(rev)}</div></div>
+        <div><div class="l">ทุนรวม</div><div class="v num">${fmt(cost)}</div></div>
+        <div><div class="l">${pf<0?'ขาดทุน':'เหลือ'}</div><div class="v num ${pf<0?'loss':'profit'}">${fmt(pf)}${pf>=0&&rev>0?' <span style="font-size:12px">·'+pct.toFixed(0)+'%</span>':''}</div></div>
+      </div>${lowWarn}</div>`;
+  }
+  h+=`<button class="link" style="display:block;margin:2px auto 10px" onclick="go({name:'newjob'})">+ สร้างงานใหม่ / ดูงานที่จบแล้ว ›</button>`;
+  $('#main').innerHTML=h;
+  $('#bottom').innerHTML=`<button class="cta" onclick="go({name:'daylog',jobId:lastJobId})">${IC.plus} ลงงานวันนี้</button>${tabbar()}`;
+}
+
+/* ═══════════════════ screen: job detail ═══════════════════ */
+function scrJob(){
+  const j=jobById(view.jobId); if(!j){goTab('jobs');return}
+  lastJobId=j.id;
+  const rev=jobRevenue(j),mc=machineCost(j),lc=labourCost(j),pf=rev-mc-lc,c=custOf(j);
+  const mlines=linesOf(j).filter(l=>l.group==='machine');
+  const llines=linesOf(j).filter(l=>l.group==='labour');
+  const days=daysOf(j);
+  const lineHtml=l=>{
+    let sub='';
+    if(l.unit==='lump')sub='เหมา';
+    else sub=`${fmtQ(l.qty)} ${UNITL[l.unit]||''} × ${fmt(l.rate)}`;
+    if(l.includesDriver)sub+=' · รวมคนขับ';
+    else if(l.own)sub+=' · รถเรา';
+    return `<div class="line" onclick="editLine('${l.id}')" style="cursor:pointer">
+      <div><div class="nm">${esc(l.label)}</div><div class="sub num6 ${l.includesDriver?'grn':''}" style="font-weight:${l.includesDriver?'600':'400'}">${sub}</div></div>
+      <div class="amt num">${fmt(l.amount)}</div></div>`;
+  };
+  let h=`<div class="backbar"><button class="bk" onclick="back()">${IC.back}</button>
+    <div><h1 class="th-head">${esc(j.title)}</h1>
+    <div class="sub">${esc(c.name)}${c.place?' · '+esc(c.place):''} · ${thD(j.startDate)}${j.endDate?'–'+thD(j.endDate):''}</div></div>
+    <button class="bk" style="margin-left:auto" onclick="editJob('${j.id}')" title="แก้งาน"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7 21l-5 1 1-5Z"/></svg></button></div>`;
+  h+=`<div class="darkcard"><div style="display:flex;text-align:center">
+      <div style="flex:1"><div class="l">รับ</div><div class="num" style="font-size:22px">${fmt(rev)}</div></div>
+      <div style="flex:1;border-left:1px solid var(--n700)"><div class="l">ทุนทั้งหมด</div><div class="num" style="font-size:22px">${fmt(mc+lc)}</div></div>
+      <div style="flex:1;border-left:1px solid var(--n700)"><div class="l">${pf<0?'ขาดทุน':'เหลือ'}</div><div class="num" style="font-size:22px;color:${pf<0?'var(--a400)':'var(--g400)'}">${fmt(pf)}</div></div>
+    </div></div>`;
+  // deal card
+  const cpt=+j.cubicPerTrip||12, m=matOf(j);
+  h+=`<div class="card"><h2 class="th-head">ตกลงกับเจ้าที่ไว้แบบนี้</h2>
+    <div class="line"><div><div class="nm">วิธีคิดราคา</div><div class="sub">${REVL[j.revenueMode]}${m?' · '+esc(m.name):''}</div></div>
+      <div class="amt num">${j.revenueMode==='lump_sum'?fmt(j.lumpSumAmount):fmt(j.revenueRate)+' <span style="font-weight:400;font-size:13px;color:var(--n600)">/'+({per_trip:'เที่ยว',per_cubic:'คิว',per_ton:'ตัน',hourly:'ชม.',daily:'วัน'}[j.revenueMode]||'')+'</span>'}</div></div>
+    ${['per_trip','per_cubic','per_ton'].includes(j.revenueMode)?`
+    <div class="line"><div><div class="nm">สิบล้อบรรทุกเฉลี่ย</div><div class="sub">ตัวคูณแปลงหน่วย${m?' · '+esc(m.name)+' 1 คิว = '+fmtQ(m.tonPerCubic)+' ตัน':''}</div></div>
+      <div class="amt num6">${fmtQ(cpt)} คิว · ${fmtQ(cpt*(m?+m.tonPerCubic:1.5))} ตัน</div></div>
+    <div style="padding-top:10px"><div class="sub muted" style="font-size:13px;margin-bottom:6px">ส่งได้แล้ว ${fmtQ(jobTrips(j))} เที่ยว — ดูเป็นหน่วยไหนก็ได้</div>${unitSeg(j)}</div>`:''}
+    ${j.revenueMode==='hourly'?`<div class="line"><div class="nm">ชั่วโมงเครื่องรวม</div><div class="amt num">${fmtQ(jobHours(j))} ชม.</div></div>`:''}
+  </div>`;
+  // machine cost
+  h+=`<div class="card"><div style="display:flex;align-items:baseline"><h2 class="th-head">ค่ารถ</h2>
+      <div class="num" style="margin-left:auto;font-size:20px">${fmt(mc)}</div></div>
+    ${mlines.map(lineHtml).join('')||'<div class="muted" style="font-size:14px">ยังไม่มีรายการ</div>'}
+    <button class="link" onclick="addLineDlg('${j.id}','machine')">+ เพิ่มรายการค่ารถ</button></div>`;
+  // labour cost
+  h+=`<div class="card"><div style="display:flex;align-items:baseline"><h2 class="th-head">ค่าแรง–ค่าคน</h2>
+      <div class="num" style="margin-left:auto;font-size:20px">${fmt(lc)}</div></div>
+    <div class="muted" style="font-size:13px;margin-bottom:4px">นับแค่คนที่เราจ่ายเอง รถร่วมที่รวมคนขับแล้วไม่นับซ้ำ</div>
+    ${llines.map(lineHtml).join('')||'<div class="muted" style="font-size:14px">ยังไม่มีรายการ</div>'}
+    <button class="link" onclick="addLineDlg('${j.id}','labour')">+ เพิ่มค่าแรงเอง</button>
+    <div class="total"><span>ค่ารถ + ค่าแรง</span><span class="amt num">${fmt(mc+lc)}</span></div>
+    <button class="link" onclick="compareDlg('${j.id}')">เทียบดู: คิดชั่วโมง หรือ เหมาเที่ยว แบบไหนคุ้ม ›</button></div>`;
+  // payments
+  const due=jobDue(j);
+  h+=`<div class="card"><div style="display:flex;align-items:baseline"><h2 class="th-head">เงินจากเจ้าที่</h2>
+      ${due>0?`<span class="chip acc num6" style="margin-left:auto">ค้างรับ ${fmt(due)}</span>`:`<span class="chip grn" style="margin-left:auto">รับเงินครบ</span>`}</div>
+    ${paysOf(j).map(p=>`<div class="line"><div><div class="nm">รับเงิน</div><div class="sub">${thDY(p.date)}${p.note?' · '+esc(p.note):''}</div></div><div class="amt num profit">+${fmt(p.amount)}</div></div>`).join('')||'<div class="muted" style="font-size:14px">ยังไม่ได้รับเงิน</div>'}
+    <button class="link" onclick="addPaymentDlg('${j.id}')">+ ลงเงินที่รับมา</button></div>`;
+  // daily logs
+  h+=`<div class="card"><h2 class="th-head">บันทึกรายวัน</h2>
+    ${days.map(d=>{
+      const bits=[];
+      if(+d.trips)bits.push(fmtQ(d.trips)+' เที่ยว');
+      if(+d.hours)bits.push(fmtQ(d.hours)+' ชม.เครื่อง');
+      if(+d.fuelLitres)bits.push('น้ำมัน '+fmtQ(d.fuelLitres)+' ล.');
+      if(+d.workers)bits.push('คน '+d.workers);
+      if(d.mechanic)bits.push('ช่างมาซ่อม');
+      if(d.note&&!bits.includes(d.note))bits.push(d.note);
+      return `<div class="line" onclick="go({name:'daylog',jobId:'${j.id}',dayId:'${d.id}'})" style="cursor:pointer">
+        <div><div class="nm num6">${thD(d.date)}</div><div class="sub">${esc(bits.join(' · ')||'—')}</div></div>
+        <div class="amt muted" style="font-size:13px">แก้ ›</div></div>`;
+    }).join('')||'<div class="muted" style="font-size:14px">ยังไม่มีบันทึก — กด "ลงงานวันนี้"</div>'}</div>`;
+  if(j.status==='active')
+    h+=`<button class="cta secondary" style="margin-bottom:12px" onclick="markDone('${j.id}')">✓ ปิดงานนี้ (ทำเสร็จแล้ว)</button>`;
+  else h+=`<button class="cta secondary" style="margin-bottom:12px" onclick="markActive('${j.id}')">เปิดงานนี้กลับมาทำต่อ</button>`;
+  $('#main').innerHTML=h;
+  $('#bottom').innerHTML=`<button class="cta" onclick="go({name:'daylog',jobId:'${j.id}'})">${IC.plus} ลงงานวันนี้</button>${tabbar()}`;
+}
+function markDone(id){const j=jobById(id);j.status='done';if(!j.endDate)j.endDate=today();touch(j);markDirty('jobs',id);toast('ปิดงานแล้ว');render()}
+function markActive(id){const j=jobById(id);j.status='active';touch(j);markDirty('jobs',id);render()}
+
+/* ═══════════════════ daily log form ═══════════════════ */
+function scrDaylog(){
+  const editing=view.dayId?db.jobDays.find(d=>d.id===view.dayId):null;
+  const jid=editing?editing.jobId:(view.jobId||lastJobId||db.jobs.find(j=>j.status==='active')?.id);
+  const actives=db.jobs.filter(j=>j.status==='active');
+  if(!actives.length&&!editing){go({name:'newjob'});return}
+  const d=editing||{date:today(),trips:'',hours:'',workers:'',fuelLitres:'',fuelBaht:'',mechanic:false,dozer:false,foreman:true,cashReceived:'',note:''};
+  let h=`<div class="backbar"><button class="bk" onclick="back()">${IC.back}</button>
+    <div><h1 class="th-head">${editing?'แก้บันทึกวัน '+thD(editing.date):'ลงงานวันนี้'}</h1>
+    <div class="sub">กรอกเท่าที่รู้ก่อน เดี๋ยวค่อยมาเติมได้</div></div></div>`;
+  h+=`<form id="dayform" onsubmit="saveDaylog(event)"><div class="card">
+    <div class="field"><label>งาน</label><select name="jobId" ${editing?'disabled':''}>
+      ${(editing?db.jobs:actives).map(j=>`<option value="${j.id}" ${j.id===jid?'selected':''}>${esc(j.title)}</option>`).join('')}</select></div>
+    <div class="field"><label>วันที่</label><input type="date" name="date" value="${d.date}" required></div>
+    <div class="grid2">
+      <div class="field"><label>เที่ยวสิบล้อ (เที่ยว)</label><input type="number" step="0.5" min="0" name="trips" inputmode="decimal" value="${d.trips||''}" placeholder="0"></div>
+      <div class="field"><label>ชั่วโมงแบ็คโฮ (ชม.)</label><input type="number" step="0.5" min="0" name="hours" inputmode="decimal" value="${d.hours||''}" placeholder="0"></div>
+      <div class="field"><label>คนงานหน้างาน (คน)</label><input type="number" min="0" name="workers" inputmode="numeric" value="${d.workers||''}" placeholder="0"></div>
+      <div class="field"><label>เงินที่เจ้าที่จ่ายวันนี้</label><input type="number" min="0" name="cashReceived" inputmode="numeric" value="${d.cashReceived||''}" placeholder="0"></div>
+      <div class="field"><label>น้ำมันที่เติม (ลิตร)</label><input type="number" min="0" name="fuelLitres" inputmode="decimal" value="${d.fuelLitres||''}" placeholder="0"></div>
+      <div class="field"><label>น้ำมันที่เติม (บาท)</label><input type="number" min="0" name="fuelBaht" inputmode="numeric" value="${d.fuelBaht||''}" placeholder="0"></div>
+    </div>
+    <label class="checkrow"><input type="checkbox" name="foreman" ${d.foreman!==false?'checked':''}> คนคุมงานออกงานวันนี้</label>
+    <label class="checkrow"><input type="checkbox" name="dozer" ${d.dozer?'checked':''}> รถไถออกงานวันนี้ (คิดค่าคนขับรถไถ)</label>
+    <label class="checkrow"><input type="checkbox" name="mechanic" ${d.mechanic?'checked':''}> ช่างมาซ่อมวันนี้</label>
+    <div class="field" style="margin-top:8px"><label>หมายเหตุ (ฝนตก / หยุดงาน / อื่น ๆ)</label><textarea name="note">${esc(d.note||'')}</textarea></div>
+  </div>
+  <div class="card" style="background:var(--g100)">
+    <div style="font-size:13px;color:var(--g800);font-weight:600">ค่าแรงที่แอปจะเติมให้เอง</div>
+    <div class="muted" style="font-size:13px">คิดจากอัตราที่ตั้งไว้ในหน้า รถ-คน — เที่ยวสิบล้อ × ค่าแรงต่อเที่ยว, ชั่วโมงแบ็คโฮ × ค่าแรงต่อชม., ค่ากินตามจำนวนคน ฯลฯ รถร่วมที่รวมคนขับแล้วไม่คิดซ้ำ</div>
+  </div>
+  ${editing?`<button type="button" class="cta secondary" style="margin-bottom:12px" onclick="delDaylog('${editing.id}')">ลบบันทึกวันนี้</button>`:''}
+  </form>`;
+  $('#main').innerHTML=h;
+  $('#bottom').innerHTML=`<div class="ctarow"><button class="cta secondary" onclick="back()">ยกเลิก</button>
+    <button class="cta grow2" onclick="document.getElementById('dayform').requestSubmit()">บันทึกเลย</button></div>${tabbar()}`;
+}
+function autoLabourLines(job,day){
+  const lines=[];
+  const add=(rkey,label,unit,qty,rate,machineId)=>{if(qty>0&&rate>0)lines.push({id:uid(),jobId:job.id,jobDayId:day.id,group:'labour',
+    kind:rkey==='food'?'food':'labour',label,unit,qty,rate,amount:Math.round(qty*rate),includesDriver:false,machineId:machineId||null,rateKey:rkey,source:'auto_from_rates',updatedAt:Date.now()})};
+  const rf=rateByKey('foreman'),rt=rateByKey('truck_driver'),rb=rateByKey('backhoe_driver'),rd=rateByKey('dozer_driver'),rm=rateByKey('mechanic'),rfd=rateByKey('food');
+  if(day.foreman!==false&&rf)add('foreman','คนคุมงาน','day',1,rateVal(rf,'day'));
+  if(+day.trips&&rt){
+    if(rt.selUnit==='trip')add('truck_driver','คนขับสิบล้อ','trip',+day.trips,rateVal(rt,'trip'));
+    else add('truck_driver','คนขับสิบล้อ','day',1,rateVal(rt,'day'));
+  }
+  if(+day.hours&&rb){
+    if(rb.selUnit==='hour')add('backhoe_driver','คนขับแบ็คโฮ','hour',+day.hours,rateVal(rb,'hour'),job.machineId);
+    else add('backhoe_driver','คนขับแบ็คโฮ','day',1,rateVal(rb,'day'),job.machineId);
+  }
+  if(day.dozer&&rd)add('dozer_driver','คนขับรถไถ',rd.selUnit==='hour'?'hour':'day',1,rateVal(rd));
+  if(day.mechanic&&rm)add('mechanic','ช่างซ่อมบำรุง',rm.selUnit==='per_job'?'per_job':'day',1,rateVal(rm));
+  if(+day.workers&&rfd)add('food','ค่ากินอยู่คนงาน '+day.workers+' คน','person_day',+day.workers,rateVal(rfd,'person_day'));
+  return lines;
+}
+function saveDaylog(ev){
+  ev.preventDefault();
+  const f=ev.target;
+  const editing=view.dayId?db.jobDays.find(d=>d.id===view.dayId):null;
+  const jid=editing?editing.jobId:f.jobId.value;
+  const job=jobById(jid);
+  const day=editing||{id:uid(),jobId:jid};
+  Object.assign(day,{date:f.date.value,trips:+f.trips.value||0,hours:+f.hours.value||0,workers:+f.workers.value||0,
+    fuelLitres:+f.fuelLitres.value||0,fuelBaht:+f.fuelBaht.value||0,mechanic:f.mechanic.checked,dozer:f.dozer.checked,
+    foreman:f.foreman.checked,note:f.note.value.trim(),weather:''});
+  touch(day);
+  if(!editing)db.jobDays.push(day);
+  markDirty('jobDays',day.id);
+  // regenerate auto lines for this day
+  db.costLines=db.costLines.filter(l=>!(l.jobDayId===day.id&&(l.source==='auto_from_rates'||l.kind==='fuel')));
+  const auto=autoLabourLines(job,day);
+  auto.forEach(l=>{db.costLines.push(l);markDirty('costLines',l.id)});
+  if(+f.fuelBaht.value>0){
+    const fl={id:uid(),jobId:jid,jobDayId:day.id,group:'machine',kind:'fuel',label:'น้ำมันดีเซล'+(+f.fuelLitres.value?' '+fmtQ(f.fuelLitres.value)+' ลิตร':''),
+      unit:'lump',qty:1,rate:+f.fuelBaht.value,amount:+f.fuelBaht.value,includesDriver:false,source:'manual',updatedAt:Date.now()};
+    db.costLines.push(fl);markDirty('costLines',fl.id);
+  }
+  const cash=+f.cashReceived.value||0;
+  if(cash>0){
+    const p={id:uid(),jobId:jid,date:day.date,amount:cash,note:'รับหน้างาน',updatedAt:Date.now()};
+    db.payments.push(p);markDirty('payments',p.id);
+  }
+  lastJobId=jid;save();
+  const lab=auto.reduce((s,l)=>s+l.amount,0);
+  toast('บันทึกแล้ว · ค่าแรงอัตโนมัติ '+fmt(lab)+' บาท');
+  view={name:'job',jobId:jid};stack=[{name:'jobs'}];render();
+}
+function delDaylog(id){
+  if(!confirm('ลบบันทึกวันนี้? รายการค่าแรงอัตโนมัติของวันนี้จะถูกลบด้วย'))return;
+  db.jobDays=db.jobDays.filter(d=>d.id!==id);
+  db.costLines=db.costLines.filter(l=>l.jobDayId!==id);
+  markDirty('jobDays',id);save();toast('ลบแล้ว');back();
+}
+
+/* ═══════════════════ new / edit job ═══════════════════ */
+function scrNewJob(){
+  const done=db.jobs.filter(j=>j.status==='done');
+  let h=`<div class="backbar"><button class="bk" onclick="back()">${IC.back}</button>
+    <div><h1 class="th-head">สร้างงานใหม่</h1><div class="sub">ตกลงกับเจ้าที่ยังไง ลงไว้ตรงนี้</div></div></div>`;
+  h+=`<form id="jobform" onsubmit="saveJob(event)"><div class="card">
+    <div class="field"><label>ชื่องาน (เช่น ถมที่ลุงยาว)</label><input name="title" required placeholder="ถมที่..."></div>
+    <div class="grid2">
+      <div class="field"><label>ชื่อเจ้าของงาน</label><input name="customer" placeholder="ลุงยาว"></div>
+      <div class="field"><label>สถานที่</label><input name="place" placeholder="บ้านหนองบัว"></div>
+      <div class="field"><label>วันเริ่ม</label><input type="date" name="startDate" value="${today()}"></div>
+      <div class="field"><label>นัดเก็บเงิน (ถ้ามี)</label><input type="date" name="dueDate"></div>
+    </div>
+    <div class="field"><label>วิธีคิดเงินกับเจ้าที่</label><select name="revenueMode" onchange="jobModeChange(this)">
+      ${Object.entries(REVL).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div>
+    <div class="field" id="ratefield"><label>ราคา (บาท/เที่ยว)</label><input type="number" name="revenueRate" inputmode="numeric" placeholder="900"></div>
+    <div class="grid2">
+      <div class="field"><label>วัสดุ</label><select name="materialId"><option value="">— ไม่ระบุ —</option>
+        ${db.materials.map(m=>`<option value="${m.id}">${esc(m.name)} (1 คิว = ${fmtQ(m.tonPerCubic)} ตัน)</option>`).join('')}</select></div>
+      <div class="field"><label>สิบล้อคันนี้กี่คิว/เที่ยว</label><input type="number" step="0.5" name="cubicPerTrip" inputmode="decimal" value="${db.team.cubicPerTripDefault}"></div>
+    </div>
+    <div class="field"><label>รถหลักของงานนี้ (ถ้ามี)</label><select name="machineId"><option value="">— ไม่ระบุ —</option>
+      ${db.machines.map(m=>`<option value="${m.id}">${esc(m.nickname)}${m.model?' '+m.model:''}</option>`).join('')}</select></div>
+  </div></form>`;
+  if(done.length){
+    h+=`<div class="card"><h2 class="th-head">งานที่จบแล้ว</h2>${done.map(j=>{
+      const pf=jobProfit(j);
+      return `<div class="line" onclick="go({name:'job',jobId:'${j.id}'})" style="cursor:pointer">
+        <div><div class="nm">${esc(j.title)}</div><div class="sub">${thD(j.startDate)}${j.endDate?'–'+thDY(j.endDate):''}</div></div>
+        <div class="amt num ${pf<0?'loss':'profit'}">${fmt(pf)}</div></div>`}).join('')}</div>`;
+  }
+  $('#main').innerHTML=h;
+  $('#bottom').innerHTML=`<div class="ctarow"><button class="cta secondary" onclick="back()">ยกเลิก</button>
+    <button class="cta grow2" onclick="document.getElementById('jobform').requestSubmit()">สร้างงาน</button></div>${tabbar()}`;
+}
+function jobModeChange(sel){
+  const f=$('#ratefield');
+  const map={per_trip:'ราคา (บาท/เที่ยว)',per_cubic:'ราคา (บาท/คิว)',per_ton:'ราคา (บาท/ตัน)',hourly:'ราคา (บาท/ชม.)',daily:'ราคา (บาท/วัน)',lump_sum:'เหมาทั้งงาน (บาท)'};
+  f.querySelector('label').textContent=map[sel.value];
+}
+function saveJob(ev){
+  ev.preventDefault();const f=ev.target;
+  let cust=db.customers.find(c=>c.name===f.customer.value.trim());
+  if(!cust&&f.customer.value.trim()){cust={id:uid(),name:f.customer.value.trim(),place:f.place.value.trim(),updatedAt:Date.now()};db.customers.push(cust);markDirty('customers',cust.id)}
+  const j={id:uid(),customerId:cust?cust.id:'',title:f.title.value.trim(),place:f.place.value.trim(),
+    startDate:f.startDate.value,endDate:'',status:'active',revenueMode:f.revenueMode.value,
+    revenueRate:+f.revenueRate.value||0,lumpSumAmount:f.revenueMode.value==='lump_sum'?+f.revenueRate.value||0:0,
+    materialId:f.materialId.value,cubicPerTrip:+f.cubicPerTrip.value||db.team.cubicPerTripDefault,
+    dueDate:f.dueDate.value,machineId:f.machineId.value,updatedAt:Date.now()};
+  db.jobs.push(j);markDirty('jobs',j.id);lastJobId=j.id;save();
+  toast('สร้างงานแล้ว');view={name:'job',jobId:j.id};stack=[{name:'jobs'}];render();
+}
+function editJob(id){
+  const j=jobById(id);
+  openDlg(`<h2 class="th-head">แก้งาน</h2>
+    <div class="field"><label>ชื่องาน</label><input id="ej_title" value="${esc(j.title)}"></div>
+    <div class="field"><label>ราคา (${{per_trip:'บาท/เที่ยว',per_cubic:'บาท/คิว',per_ton:'บาท/ตัน',hourly:'บาท/ชม.',daily:'บาท/วัน',lump_sum:'เหมาทั้งงาน'}[j.revenueMode]})</label>
+      <input id="ej_rate" type="number" value="${j.revenueMode==='lump_sum'?j.lumpSumAmount:j.revenueRate}"></div>
+    <div class="field"><label>นัดเก็บเงิน</label><input id="ej_due" type="date" value="${j.dueDate||''}"></div>
+    <div class="field"><label>คิว/เที่ยว</label><input id="ej_cpt" type="number" step="0.5" value="${j.cubicPerTrip||12}"></div>
+    <div class="ctarow" style="margin-top:6px"><button class="cta secondary" onclick="closeDlg()">ยกเลิก</button>
+      <button class="cta grow2" onclick="saveEditJob('${id}')">บันทึก</button></div>
+    <button class="link" style="margin-top:10px;color:var(--a800)" onclick="delJob('${id}')">ลบงานนี้ทั้งงาน</button>`);
+}
+function saveEditJob(id){
+  const j=jobById(id);
+  j.title=$('#ej_title').value.trim()||j.title;
+  const r=+$('#ej_rate').value||0;
+  if(j.revenueMode==='lump_sum')j.lumpSumAmount=r;else j.revenueRate=r;
+  j.dueDate=$('#ej_due').value;j.cubicPerTrip=+$('#ej_cpt').value||12;
+  touch(j);markDirty('jobs',id);save();closeDlg();render();
+}
+function delJob(id){
+  if(!confirm('ลบงานนี้ทั้งงาน? บันทึกรายวัน ค่ารถ ค่าแรง และเงินรับของงานนี้จะหายทั้งหมด'))return;
+  db.jobs=db.jobs.filter(j=>j.id!==id);
+  db.jobDays=db.jobDays.filter(d=>d.jobId!==id);
+  db.costLines=db.costLines.filter(l=>l.jobId!==id);
+  db.payments=db.payments.filter(p=>p.jobId!==id);
+  markDirty('jobs',id);save();closeDlg();toast('ลบงานแล้ว');goTab('jobs');
+}
+
+/* ═══════════════════ cost line add/edit ═══════════════════ */
+function addLineDlg(jobId,group){
+  const isM=group==='machine';
+  openDlg(`<h2 class="th-head">${isM?'เพิ่มรายการค่ารถ':'เพิ่มค่าแรงเอง'}</h2>
+    ${isM?`<div class="field"><label>ประเภท</label><select id="ln_kind">
+      ${Object.entries(KINDL).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div>`:''}
+    <div class="field"><label>ชื่อรายการ (เช่น ${isM?'แบ็คโฮตักขึ้นสิบล้อ':'คนขับสิบล้อ'})</label><input id="ln_label"></div>
+    <div class="grid2">
+      <div class="field"><label>หน่วย</label><select id="ln_unit">
+        ${['hour','day','trip','lump','person_day'].map(u=>`<option value="${u}">${UNITL[u]}</option>`).join('')}</select></div>
+      <div class="field"><label>จำนวน</label><input id="ln_qty" type="number" step="0.5" value="1"></div>
+    </div>
+    <div class="field"><label>ราคาต่อหน่วย (บาท)</label><input id="ln_rate" type="number" inputmode="numeric"></div>
+    ${isM?`<div class="field"><label>รถ (ถ้าผูกกับคันไหน)</label><select id="ln_mach"><option value="">— ไม่ระบุ —</option>
+      ${db.machines.map(m=>`<option value="${m.id}">${esc(m.nickname)}${m.model?' '+m.model:''}</option>`).join('')}</select></div>
+    <label class="checkrow"><input type="checkbox" id="ln_incdrv"> รถร่วม รวมคนขับแล้ว (จะไม่คิดค่าแรงคนขับซ้ำ)</label>
+    <label class="checkrow"><input type="checkbox" id="ln_own" checked> รถเราเอง</label>`:''}
+    <div class="ctarow" style="margin-top:8px"><button class="cta secondary" onclick="closeDlg()">ยกเลิก</button>
+      <button class="cta grow2" onclick="saveLine('${jobId}','${group}')">เพิ่มรายการ</button></div>`);
+}
+function saveLine(jobId,group){
+  const label=$('#ln_label').value.trim();
+  const qty=+$('#ln_qty').value||0, rate=+$('#ln_rate').value||0;
+  if(!label||!qty||!rate){toast('กรอกชื่อ จำนวน กับราคาก่อน');return}
+  const isM=group==='machine';
+  const l={id:uid(),jobId,jobDayId:null,group,kind:isM?$('#ln_kind').value:'labour',label,
+    unit:$('#ln_unit').value,qty,rate,amount:Math.round(qty*rate),
+    includesDriver:isM?$('#ln_incdrv').checked:false,own:isM?$('#ln_own').checked:false,
+    machineId:isM?($('#ln_mach').value||null):null,source:'manual',updatedAt:Date.now()};
+  db.costLines.push(l);markDirty('costLines',l.id);save();closeDlg();render();
+}
+function editLine(id){
+  const l=db.costLines.find(x=>x.id===id);if(!l)return;
+  openDlg(`<h2 class="th-head">แก้รายการ</h2>
+    <div class="field"><label>ชื่อรายการ</label><input id="el_label" value="${esc(l.label)}"></div>
+    <div class="grid2">
+      <div class="field"><label>จำนวน (${UNITL[l.unit]||''})</label><input id="el_qty" type="number" step="0.5" value="${l.qty}"></div>
+      <div class="field"><label>ราคาต่อหน่วย</label><input id="el_rate" type="number" value="${l.rate}"></div>
+    </div>
+    ${l.group==='machine'?`<label class="checkrow"><input type="checkbox" id="el_incdrv" ${l.includesDriver?'checked':''}> รถร่วม รวมคนขับแล้ว</label>`:''}
+    <div class="ctarow" style="margin-top:8px"><button class="cta secondary" onclick="closeDlg()">ยกเลิก</button>
+      <button class="cta grow2" onclick="saveEditLine('${id}')">บันทึก</button></div>
+    <button class="link" style="margin-top:10px;color:var(--a800)" onclick="delLine('${id}')">ลบรายการนี้</button>`);
+}
+function saveEditLine(id){
+  const l=db.costLines.find(x=>x.id===id);
+  l.label=$('#el_label').value.trim()||l.label;
+  l.qty=+$('#el_qty').value||0;l.rate=+$('#el_rate').value||0;l.amount=Math.round(l.qty*l.rate);
+  const cb=$('#el_incdrv');if(cb)l.includesDriver=cb.checked;
+  touch(l);markDirty('costLines',id);save();closeDlg();render();
+}
+function delLine(id){
+  db.costLines=db.costLines.filter(l=>l.id!==id);
+  markDirty('costLines',id);save();closeDlg();render();
+}
+function addPaymentDlg(jobId){
+  const j=jobById(jobId);
+  openDlg(`<h2 class="th-head">ลงเงินที่รับมา</h2>
+    <div class="muted" style="font-size:14px;margin-bottom:10px">${esc(j.title)} · ค้างรับ ${fmt(jobDue(j))} บาท</div>
+    <div class="field"><label>จำนวนเงิน (บาท)</label><input id="pm_amt" type="number" inputmode="numeric" value="${jobDue(j)||''}"></div>
+    <div class="field"><label>วันที่</label><input id="pm_date" type="date" value="${today()}"></div>
+    <div class="field"><label>หมายเหตุ</label><input id="pm_note" placeholder="โอน / เงินสด / งวดที่ 2"></div>
+    <div class="ctarow" style="margin-top:8px"><button class="cta secondary" onclick="closeDlg()">ยกเลิก</button>
+      <button class="cta grow2" onclick="savePayment('${jobId}')">บันทึก</button></div>`);
+}
+function savePayment(jobId){
+  const amt=+$('#pm_amt').value||0;
+  if(!amt){toast('ใส่จำนวนเงินก่อน');return}
+  const p={id:uid(),jobId,date:$('#pm_date').value,amount:amt,note:$('#pm_note').value.trim(),updatedAt:Date.now()};
+  db.payments.push(p);markDirty('payments',p.id);save();closeDlg();toast('ลงเงินรับแล้ว');render();
+}
+
+/* ═══════════════════ compare dialog (§6.4) ═══════════════════ */
+function compareDlg(jobId){
+  const j=jobById(jobId);
+  const trips=jobTrips(j)||50, hours=jobHours(j)||8, days=jobDayCount(j);
+  openDlg(`<h2 class="th-head">เทียบราคาเร็ว ๆ</h2>
+    <div class="muted" style="font-size:13px;margin-bottom:10px">ใส่ราคาที่เขาเสนอ แล้วดูว่าแบบไหนถูกกว่า (จากตัวเลขงานนี้จริง: ${fmtQ(trips)} เที่ยว · ${fmtQ(hours)} ชม. · ${days} วัน)</div>
+    <div class="grid2">
+      <div class="field"><label>เหมาเที่ยวละ</label><input id="cp_trip" type="number" value="300"></div>
+      <div class="field"><label>ชั่วโมงละ</label><input id="cp_hour" type="number" value="1800"></div>
+      <div class="field"><label>วันละ</label><input id="cp_day" type="number" value="15000"></div>
+      <div class="field"><label>ค่าคนขับ/วัน (ถ้าไม่รวม)</label><input id="cp_drv" type="number" value="700"></div>
+    </div>
+    <div id="cp_out" class="card" style="background:var(--g100);box-shadow:none;margin:8px 0 0"></div>
+    <div class="ctarow" style="margin-top:10px"><button class="cta secondary" onclick="closeDlg()">ปิด</button>
+      <button class="cta grow2" onclick="runCompare(${trips},${hours},${days})">คำนวณ</button></div>`);
+  runCompare(trips,hours,days);
+}
+function runCompare(trips,hours,days){
+  const pt=(+$('#cp_trip').value||0)*trips, ph=(+$('#cp_hour').value||0)*hours, pd=(+$('#cp_day').value||0)*days, drv=(+$('#cp_drv').value||0)*days;
+  const opts=[['เหมาเที่ยว',pt],['คิดชั่วโมง',ph],['คิดรายวัน',pd]].filter(o=>o[1]>0).sort((a,b)=>a[1]-b[1]);
+  if(!opts.length)return;
+  const best=opts[0], second=opts[1];
+  $('#cp_out').innerHTML=`
+    ${opts.map(([n,v],i)=>`<div class="line"><div class="nm">${n}</div><div class="amt num ${i===0?'profit':''}">${fmt(v)}</div></div>`).join('')}
+    <div style="font-size:14px;font-weight:600;color:var(--g800);margin-top:6px">
+      ${best[0]}ถูกกว่า${second?' '+fmt(second[1]-best[1])+' บาท':''} ${drv>0?'(ยังไม่รวมค่าคนขับ '+fmt(drv)+')':''}</div>`;
+}
+
+/* ═══════════════════ screen: พูด (voice) ═══════════════════ */
+let recog=null, recording=false, transcript='';
+function scrVoice(){
+  document.body.classList.add('dark');
+  const notes=[...db.voiceNotes].sort((a,b)=>a.date<b.date?1:-1).slice(0,6);
+  const mk=nowMk(), tISO=today();
+  // today's summary
+  let tTrips=0,tRev=0,tCost=0;
+  db.jobs.forEach(j=>{daysOf(j).forEach(d=>{if(d.date===tISO){tTrips+=+d.trips||0;tRev+=dayRevenue(j,d);
+    tCost+=db.costLines.filter(l=>l.jobDayId===d.id).reduce((s,l)=>s+l.amount,0)}})});
+  const tPf=Math.round(tRev-tCost);
+  let h=`<div class="appbar" style="color:var(--n100)">
+    <div><div class="team" style="color:var(--n400)">${esc(db.team.name)}</div><h1 class="th-head">พูดใส่แอปได้เลย</h1></div></div>
+  <div class="micwrap">
+    <button class="mic ${recording?'rec':''}" id="micbtn" onclick="toggleRec()" aria-label="กดเพื่อพูด"><div class="wave"><i></i><i></i><i></i><i></i><i></i></div></button>
+    <div style="margin-top:16px;font-size:15px;color:var(--n400)">${recording?'ฟังอยู่... พูดได้เลย':'กดแล้วพูด เช่น'}</div>
+    ${recording?'':'<div style="font-size:14px;color:var(--n500);text-align:center;padding:0 24px">"10 ล้อมาส่ง ขี้แร่ 10 เที่ยว ลงหน้างานลุงยาว คนงาน 4 คน"</div>'}
+  </div>
+  <div class="spoken" id="spokenbox">${transcript?esc(transcript):'<span style="color:var(--n500)">ที่พูดจะขึ้นตรงนี้ — หรือพิมพ์เอาก็ได้ข้างล่าง</span>'}</div>
+  <div style="display:flex;gap:8px;margin-bottom:14px">
+    <input id="typein" placeholder="พิมพ์แทนพูดตรงนี้..." style="background:var(--n800);border-color:var(--n700);color:var(--n100)"
+      onkeydown="if(event.key==='Enter'){useTyped()}">
+    <button class="cta" style="width:auto;padding:0 20px;min-height:46px" onclick="useTyped()">แยกเลย</button>
+  </div>`;
+  if(tTrips||tRev){
+    h+=`<div class="creamcard"><h2 class="th-head" style="font-size:16px;margin-bottom:8px">วันนี้ลงไปแล้ว</h2>
+      <div class="sumrow" style="border-top:0;margin-top:0;padding-top:0">
+        <div><div class="l">เที่ยว</div><div class="v num">${fmtQ(tTrips)}</div></div>
+        <div><div class="l">รับ</div><div class="v num">${fmt(tRev)}</div></div>
+        <div><div class="l">${tPf<0?'ขาดทุน':'เหลือ'}</div><div class="v num ${tPf<0?'loss':'profit'}">${fmt(tPf)}</div></div>
+      </div></div>`;
+  }
+  if(notes.length){
+    h+=`<div class="darklist" style="color:var(--n100)"><div style="font-size:13px;color:var(--n500);margin-bottom:4px">ที่พูดไว้ก่อนหน้า</div>
+    ${notes.map(n=>`<div class="line"><div style="min-width:0"><div class="sub" style="color:var(--n400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">"${esc(n.text)}"</div>
+      <div class="sub" style="color:var(--n500)">${thD(n.date)}${n.saved?' · <span style="color:var(--g400)">✓ ลงแล้ว</span>':''}</div></div></div>`).join('')}</div>`;
+  }
+  $('#main').innerHTML=h;
+  $('#bottom').innerHTML=tabbar();
+}
+function toggleRec(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('เครื่องนี้ไม่รองรับพูด — พิมพ์เอาได้เลย');$('#typein').focus();return}
+  if(recording){recog&&recog.stop();return}
+  recog=new SR();recog.lang='th-TH';recog.interimResults=true;recog.continuous=false;
+  recording=true;transcript='';render();
+  recog.onresult=e=>{transcript=[...e.results].map(r=>r[0].transcript).join('');
+    const b=$('#spokenbox');if(b)b.textContent=transcript};
+  recog.onend=()=>{recording=false;
+    if(transcript.trim())goConfirm(transcript.trim());else render()};
+  recog.onerror=()=>{recording=false;toast('ฟังไม่ทัน ลองใหม่หรือพิมพ์เอา');render()};
+  recog.start();
+}
+function useTyped(){
+  const t=$('#typein').value.trim();
+  if(!t){toast('พิมพ์ก่อนนะ');return}
+  transcript=t;goConfirm(t);
+}
+
+/* ═══════════════════ Thai parser ═══════════════════ */
+function thaiDigits(s){return s.replace(/[๐-๙]/g,d=>'๐๑๒๓๔๕๖๗๘๙'.indexOf(d))}
+function parseThai(text){
+  const t=thaiDigits(text);
+  const p={text, jobId:null, trips:null, hours:null, workers:null, fuelLitres:null, fuelBaht:null, cash:null, materialId:null, missing:[]};
+  let m;
+  if(m=t.match(/(\d+(?:\.\d+)?)\s*เที่ยว/))p.trips=+m[1];
+  if(m=t.match(/(\d+(?:\.\d+)?)\s*(?:ชั่วโมง|ชม\.?)/))p.hours=+m[1];
+  if(m=t.match(/คนงาน\s*(\d+)\s*คน/))p.workers=+m[1];
+  else if(m=t.match(/(\d+)\s*คน(?!ขับ)/))p.workers=+m[1];
+  if(m=t.match(/น้ำมัน\s*(\d+(?:\.\d+)?)\s*(?:ลิตร|ล\.?)/))p.fuelLitres=+m[1];
+  if(m=t.match(/น้ำมัน\s*([\d,]+)\s*บาท/))p.fuelBaht=+m[1].replace(/,/g,'');
+  if(m=t.match(/(?:ได้เงิน|รับเงิน|จ่ายมา|โอนมา)\s*([\d,]+)/))p.cash=+m[1].replace(/,/g,'');
+  for(const mat of db.materials){if(t.includes(mat.name)){p.materialId=mat.id;break}}
+  const actives=db.jobs.filter(j=>j.status==='active');
+  for(const j of actives){
+    const c=custOf(j);
+    if((c.name&&t.includes(c.name))||t.includes(j.title)){p.jobId=j.id;break}
+  }
+  if(!p.jobId&&actives.length)p.jobId=lastJobId&&actives.some(j=>j.id===lastJobId)?lastJobId:actives[0].id;
+  if(p.hours==null)p.missing.push('+ เลขชั่วโมงเครื่อง');
+  if(!t.includes('ช่าง'))p.missing.push('+ ช่างซ่อม');
+  p.mechanic=t.includes('ช่าง');
+  p.missing.push('+ รูปหน้างาน');
+  return p;
+}
+let parsed=null;
+function goConfirm(text){
+  parsed=parseThai(text);
+  go({name:'confirm'});
+}
+
+/* ═══════════════════ screen: confirm parse ═══════════════════ */
+function scrConfirm(){
+  document.body.classList.add('dark');
+  const p=parsed; if(!p){goTab('voice');return}
+  const j=jobById(p.jobId);
+  const cpt=j?(+j.cubicPerTrip||12):12;
+  const mat=p.materialId?db.materials.find(m=>m.id===p.materialId):(j?matOf(j):null);
+  const tpc=mat?+mat.tonPerCubic:1.5;
+  const cubic=(p.trips||0)*cpt, ton=cubic*tpc;
+  // preview money
+  let rev=0;
+  if(j){
+    const fake={trips:p.trips||0,hours:p.hours||0};
+    rev=dayRevenue(j,fake);
+  }
+  const fakeDay={trips:p.trips||0,hours:p.hours||0,workers:p.workers||0,mechanic:p.mechanic,foreman:true,dozer:false};
+  const auto=j?autoLabourLines(j,Object.assign({id:'preview'},fakeDay)):[];
+  const autoSum=auto.reduce((s,l)=>s+l.amount,0);
+  const fuel=p.fuelBaht||0;
+  const net=Math.round(rev-autoSum-fuel);
+  let h=`<div class="backbar" style="color:var(--n100)"><button class="bk" style="background:var(--n800)" onclick="back()">${IC.back}</button>
+    <div><h1 class="th-head">แยกให้แล้ว ถูกไหม</h1><div class="sub" style="color:var(--n400)">แตะช่องไหนก็แก้ได้</div></div></div>`;
+  h+=`<div class="spoken" style="margin-top:2px"><div class="lbl">ที่พูดมา</div>"${esc(p.text)}"</div>`;
+  h+=`<div class="creamcard">
+    <div class="field"><label>งาน</label><select onchange="parsed.jobId=this.value;render()">
+      ${db.jobs.filter(x=>x.status==='active').map(x=>`<option value="${x.id}" ${x.id===p.jobId?'selected':''}>${esc(x.title)}</option>`).join('')}</select></div>
+    <div class="grid2">
+      <div class="field"><label>คนงานหน้างาน (คน)</label><input type="number" value="${p.workers??''}" placeholder="—" onchange="parsed.workers=+this.value||null;render()"></div>
+      <div class="field"><label>ชั่วโมงแบ็คโฮ</label><input type="number" step="0.5" value="${p.hours??''}" placeholder="—" onchange="parsed.hours=+this.value||null;render()"></div>
+      <div class="field"><label>น้ำมัน (ลิตร)</label><input type="number" value="${p.fuelLitres??''}" placeholder="—" onchange="parsed.fuelLitres=+this.value||null;render()"></div>
+      <div class="field"><label>น้ำมัน (บาท)</label><input type="number" value="${p.fuelBaht??''}" placeholder="—" onchange="parsed.fuelBaht=+this.value||null;render()"></div>
+    </div>
+    <div style="background:var(--a100);border-radius:var(--r-md);padding:11px 13px">
+      <div style="font-size:13px;font-weight:600;color:var(--a800);margin-bottom:7px">ปริมาณวันนี้ — ดูหน่วยไหนก็ได้</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="number" step="0.5" value="${p.trips??''}" placeholder="0" style="max-width:90px;background:#fff" onchange="parsed.trips=+this.value||null;render()">
+        <div class="seg" style="background:#fff">
+          <button class="num6 on">${fmtQ(p.trips||0)} เที่ยว</button>
+          <button class="num6">${fmtQ(cubic)} คิว</button>
+          <button class="num6">${fmtQ(ton)} ตัน</button>
+        </div></div></div>
+  </div>`;
+  if(j){
+    h+=`<div class="creamcard"><h2 class="th-head" style="font-size:16px">คิดเงินให้เลย จากราคาที่ตั้งไว้</h2>
+      <div class="line"><div class="nm">รายรับ${j.revenueMode==='per_trip'?' '+fmtQ(p.trips||0)+' เที่ยว × '+fmt(j.revenueRate):''}</div><div class="amt num profit">+${fmt(rev)}</div></div>
+      ${fuel?`<div class="line"><div class="nm">น้ำมันสิบล้อ</div><div class="amt num loss">−${fmt(fuel)}</div></div>`:''}
+      <div style="font-size:13px;font-weight:600;color:var(--g700);margin-top:6px">ค่าแรงที่แอปเติมให้เอง</div>
+      ${auto.map(l=>`<div class="line"><div><div class="nm" style="font-size:15px">${esc(l.label)}</div><div class="sub num6">${fmtQ(l.qty)} ${UNITL[l.unit]} × ${fmt(l.rate)}</div></div><div class="amt num loss">−${fmt(l.amount)}</div></div>`).join('')}
+      <div class="total"><span>วันนี้${net<0?'ขาดทุน':'เหลือ'}</span><span class="amt num ${net<0?'loss':'profit'}" style="font-size:24px">${fmt(Math.abs(net))} บาท</span></div>
+    </div>`;
+  }
+  h+=`<div class="pillrow" style="margin-bottom:14px">
+    <span style="font-size:13px;color:var(--n500);width:100%">ยังไม่ได้บอก:</span>
+    ${p.missing.map(x=>`<span class="chip dash" style="border-color:var(--n600);color:var(--n400)">${esc(x)}</span>`).join('')}</div>`;
+  $('#main').innerHTML=h;
+  $('#bottom').innerHTML=`<div class="ctarow"><button class="cta secondary" onclick="back()">แก้ก่อน</button>
+    <button class="cta grow2" onclick="saveParsed()">บันทึกเลย</button></div>${tabbar()}`;
+}
+function saveParsed(){
+  const p=parsed;
+  const j=jobById(p.jobId);
+  if(!j){toast('เลือกงานก่อน');return}
+  const day={id:uid(),jobId:j.id,date:today(),trips:p.trips||0,hours:p.hours||0,workers:p.workers||0,
+    fuelLitres:p.fuelLitres||0,fuelBaht:p.fuelBaht||0,mechanic:!!p.mechanic,dozer:false,foreman:true,
+    note:'จากเสียงพูด',weather:'',updatedAt:Date.now()};
+  db.jobDays.push(day);markDirty('jobDays',day.id);
+  autoLabourLines(j,day).forEach(l=>{db.costLines.push(l);markDirty('costLines',l.id)});
+  if(p.fuelBaht>0){
+    const fl={id:uid(),jobId:j.id,jobDayId:day.id,group:'machine',kind:'fuel',label:'น้ำมันดีเซล'+(p.fuelLitres?' '+fmtQ(p.fuelLitres)+' ลิตร':''),
+      unit:'lump',qty:1,rate:p.fuelBaht,amount:p.fuelBaht,includesDriver:false,source:'voice',updatedAt:Date.now()};
+    db.costLines.push(fl);markDirty('costLines',fl.id);
+  }
+  if(p.cash>0){const pm={id:uid(),jobId:j.id,date:day.date,amount:p.cash,note:'จากเสียงพูด',updatedAt:Date.now()};
+    db.payments.push(pm);markDirty('payments',pm.id)}
+  const vn={id:uid(),date:today(),text:p.text,saved:true,updatedAt:Date.now()};
+  db.voiceNotes.push(vn);
+  lastJobId=j.id;transcript='';parsed=null;save();
+  toast('ลงให้แล้ว ✓');
+  view={name:'job',jobId:j.id};stack=[{name:'jobs'}];render();
+}
+
+/* ═══════════════════ screen: เงิน (money) ═══════════════════ */
+function scrMoney(){
+  const mk=nowMk(), ms=monthStats(mk);
+  const pctOfRev=ms.rev>0?(ms.profit/ms.rev*100):0;
+  let h=`<div class="appbar"><div><div class="team">${esc(db.team.name)}</div><h1 class="th-head">เงิน · ${thMY(mk)}</h1></div>
+    <button class="bk" style="margin-left:auto;width:46px;height:46px;border-radius:999px;background:var(--n100);box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center" onclick="settingsDlg()" title="ตั้งค่า">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></button></div>`;
+  // dark month card + 6-month bars
+  const months=[];for(let i=5;i>=0;i--)months.push(addMonths(mk,-i));
+  const stats=months.map(m=>({mk:m,s:monthStats(m)}));
+  const maxP=Math.max(...stats.map(x=>Math.abs(x.s.profit)),1);
+  h+=`<div class="darkcard">
+    <div class="l">เหลือทั้งเดือน</div>
+    <div class="num ${ms.profit<0?'':''}" style="font-size:42px;line-height:1.1;color:${ms.profit<0?'var(--a400)':'var(--n100)'}">${fmt(ms.profit)}</div>
+    <div style="font-size:13px;color:var(--n400)">${pctOfRev.toFixed(1)}% ของยอดรับ · ค่าแรงกิน ${fmt(ms.lab)}</div>
+    <div class="bars">${stats.map(x=>`<div class="b ${x.mk===mk?'now':''}"><i style="height:${Math.max(4,Math.abs(x.s.profit)/maxP*56)}px"></i><span>${THM[+x.mk.split('-')[1]-1]}</span></div>`).join('')}</div>
+  </div>`;
+  h+=`<div class="stat3">
+    <div class="stat"><div class="v num">${fmt(ms.rev)}</div><div class="l">รับมาแล้ว</div></div>
+    <div class="stat"><div class="v num">${fmt(ms.mach)}</div><div class="l">ค่ารถ</div></div>
+    <div class="stat acc"><div class="v num">${fmt(ms.lab)}</div><div class="l">ค่าแรง</div></div>
+  </div>`;
+  // receivables
+  const owed=db.jobs.map(j=>({j,due:jobDue(j)})).filter(x=>x.due>0);
+  const owedSum=owed.reduce((s,x)=>s+x.due,0);
+  h+=`<div class="card"><div style="display:flex;align-items:baseline"><h2 class="th-head">เงินที่ยังไม่ได้เก็บ</h2>
+      <div class="num" style="margin-left:auto;font-size:20px;color:var(--a700)">${fmt(owedSum)}</div></div>
+    ${owed.map(({j,due})=>{
+      const c=custOf(j);
+      let dueTxt='',late=false;
+      if(j.dueDate){
+        const diff=Math.round((new Date(today())-new Date(j.dueDate))/864e5);
+        if(diff>0){dueTxt='เลย '+diff+' วันแล้ว';late=true}
+        else dueTxt='ครบกำหนด '+thD(j.dueDate);
+      }
+      return `<div class="line" onclick="go({name:'job',jobId:'${j.id}'})" style="cursor:pointer">
+        <div><div class="nm">${esc(c.name||j.title)}</div><div class="sub ${late?'':''}" style="${late?'color:var(--a700);font-weight:600':''}">${esc(j.title)}${dueTxt?' · '+dueTxt:''}</div></div>
+        <div class="amt num">${fmt(due)}</div></div>`;
+    }).join('')||'<div class="muted" style="font-size:14px">เก็บครบทุกงานแล้ว 🎉</div>'}</div>`;
+  // jobs to watch
+  const risky=db.jobs.filter(j=>j.status==='active'&&jobRevenue(j)>0&&jobPct(j)<db.team.targetMarginPct);
+  if(risky.length){
+    h+=`<div class="card" style="background:var(--a100)"><h2 class="th-head" style="color:var(--a800)">งานที่ต้องระวัง</h2>
+    ${risky.map(j=>{const pf=jobProfit(j);
+      return `<div class="line" style="border-color:var(--a200);cursor:pointer" onclick="go({name:'job',jobId:'${j.id}'})">
+      <div><div class="nm">${esc(j.title)}</div><div class="sub" style="color:var(--a700)">${pf<0?'ขาดทุนอยู่':'เหลือแค่ '+jobPct(j).toFixed(0)+'% (เป้า '+db.team.targetMarginPct+'%)'}</div></div>
+      <div class="amt num ${pf<0?'loss':''}">${fmt(pf)}</div></div>`}).join('')}</div>`;
+  }
+  h+=`<button class="cta secondary" style="margin-bottom:12px" onclick="exportCSV()">⬇ ส่งออก Excel/CSV เดือนนี้</button>`;
+  $('#main').innerHTML=h;
+  $('#bottom').innerHTML=tabbar();
+}
+function exportCSV(){
+  const mk=nowMk();
+  let rows=[['งาน','วันที่','ประเภท','รายการ','หน่วย','จำนวน','ราคา/หน่วย','จำนวนเงิน']];
+  db.costLines.forEach(l=>{
+    const j=jobById(l.jobId);if(!j)return;
+    let dte='';if(l.jobDayId){const d=db.jobDays.find(x=>x.id===l.jobDayId);dte=d?d.date:''}
+    const lmk=dte?mkOf(dte):mkOf(j.startDate);
+    if(lmk!==mk)return;
+    rows.push([j.title,dte||j.startDate,l.group==='machine'?'ค่ารถ':'ค่าแรง',l.label,UNITL[l.unit]||l.unit,l.qty,l.rate,l.amount]);
+  });
+  db.jobs.forEach(j=>{daysOf(j).forEach(d=>{if(mkOf(d.date)===mk&&dayRevenue(j,d))rows.push([j.title,d.date,'รายรับ',REVL[j.revenueMode],'','','',Math.round(dayRevenue(j,d))])})});
+  db.payments.forEach(p=>{if(mkOf(p.date)===mk){const j=jobById(p.jobId);rows.push([j?j.title:'',p.date,'เงินรับ',p.note||'รับเงิน','','','',p.amount])}});
+  const csv='﻿'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='ต้นทุนงานดิน-'+mk+'.csv';a.click();
+  toast('ดาวน์โหลดไฟล์แล้ว');
+}
+
+/* ═══════════════════ screen: รถ-คน (fleet + rates) ═══════════════════ */
+function scrFleet(){
+  const mk=nowMk();
+  let h=`<div class="appbar"><div><div class="team">${esc(db.team.name)}</div><h1 class="th-head">รถ-คน</h1></div></div>
+  <div style="padding:0 0 12px"><div class="seg" style="width:100%;display:flex">
+    <button style="flex:1" class="${fleetTab==='machines'?'on':''}" onclick="fleetTab='machines';render()">รถแต่ละคัน เดือนนี้</button>
+    <button style="flex:1" class="${fleetTab==='rates'?'on':''}" onclick="fleetTab='rates';render()">ค่าแรง–หน่วยวัสดุ</button>
+  </div></div>`;
+  h+=fleetTab==='machines'?fleetMachines(mk):fleetRates();
+  $('#main').innerHTML=h;
+  $('#bottom').innerHTML=tabbar();
+}
+function machMonth(m,mk){
+  // รายรับของรถ = งานเช่า (รายชั่วโมง/รายวัน) ที่ผูกกับคันนี้ + บรรทัด "รถเรา" ที่คิดในงานอื่น
+  // ค่าใช้จ่าย = น้ำมัน/ซ่อม/ย้าย ที่ผูกกับคันนี้ · ค่าคนขับ = labour line ที่ผูกกับคันนี้
+  let cost=0,rev=0,hours=0,trips=0,drv=0;
+  db.costLines.forEach(l=>{
+    if(l.machineId!==m.id)return;
+    const j=jobById(l.jobId);if(!j)return;
+    let lmk;if(l.jobDayId){const d=db.jobDays.find(x=>x.id===l.jobDayId);lmk=d?mkOf(d.date):mkOf(j.startDate)}else lmk=mkOf(j.startDate);
+    if(lmk!==mk)return;
+    if(l.group==='labour')drv+=l.amount;
+    else if(l.own)rev+=l.amount;
+    else cost+=l.amount;
+  });
+  db.jobs.forEach(j=>{
+    if(j.machineId!==m.id)return;
+    const rental=['hourly','daily'].includes(j.revenueMode);
+    daysOf(j).forEach(d=>{if(mkOf(d.date)===mk){if(rental)rev+=dayRevenue(j,d);hours+=+d.hours||0;if(m.kind==='dumptruck')trips+=+d.trips||0}});
+    if(!daysOf(j).length&&mkOf(j.startDate)===mk&&rental)rev+=jobRevenue(j);
+  });
+  return {cost,rev:Math.round(rev),hours,trips,drv,net:Math.round(rev-cost-drv)};
+}
+function fleetMachines(mk){
+  let h='';
+  const withUse=[],rest=[];
+  db.machines.forEach(m=>{const s=machMonth(m,mk);(s.rev||s.cost||s.drv?withUse:rest).push([m,s])});
+  for(const [m,s] of withUse){
+    const ol=oilLeft(m);
+    h+=`<div class="card">
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <div style="flex:1"><div class="th-head" style="font-size:18px">${esc(m.nickname)}${m.model?' <span class="num6" style="font-size:15px">'+esc(m.model)+'</span>':''}</div>
+        <div class="sub muted" style="font-size:13px">${KINDK[m.kind]||''}${s.hours?' · เดิน '+fmtQ(s.hours)+' ชม.เดือนนี้':''}${s.trips?' · '+fmtQ(s.trips)+' เที่ยว':''}</div></div>
+        <div class="num ${s.net<0?'loss':'profit'}" style="font-size:20px">${fmt(s.net)}</div></div>
+      ${s.rev?`<div class="line"><div class="nm" style="font-size:15px">รายรับที่ทำได้</div><div class="amt num profit">+${fmt(s.rev)}</div></div>`:''}
+      ${s.drv?`<div class="line"><div class="nm" style="font-size:15px">ค่าคนขับ</div><div class="amt num loss">−${fmt(s.drv)}</div></div>`:''}
+      ${s.cost?`<div class="line"><div class="nm" style="font-size:15px">ค่ารถ (น้ำมัน/ซ่อม/ย้าย)</div><div class="amt num loss">−${fmt(s.cost)}</div></div>`:''}
+      <div class="pillrow" style="margin-top:8px">
+        ${m.hourMeter?`<span class="chip num6">hour meter ${fmt(m.hourMeter)}</span>`:''}
+        ${ol!==null&&m.oilChangeIntervalHours?(ol<=60?`<span class="chip acc num6">ถ่ายน้ำมันเครื่อง อีก ${fmt(ol)} ชม.</span>`:`<span class="chip num6">ถ่ายน้ำมันเครื่องอีก ${fmt(ol)} ชม.</span>`):''}
+        <button class="chip" onclick="event.stopPropagation();machDlg('${m.id}')">แก้ ›</button></div>
+      ${s.net<0?`<div class="warn"><i></i>คันนี้เดือนนี้ยังขาดทุน ${fmt(Math.abs(s.net))} — เช็คค่าซ่อมกับงานที่รับ</div>`:''}
+    </div>`;
+  }
+  if(rest.length){
+    h+=`<div class="card"><h2 class="th-head">คันอื่น ๆ (${rest.length} คัน)</h2>
+      ${rest.map(([m])=>{const ol=oilLeft(m);
+        return `<div class="line" onclick="machDlg('${m.id}')" style="cursor:pointer">
+        <div><div class="nm" style="font-size:15px">${esc(m.nickname)}${m.model?' <span class="num6" style="font-size:13px">'+esc(m.model)+'</span>':''}</div>
+        <div class="sub">${KINDK[m.kind]||''}${m.hourMeter?' · '+fmt(m.hourMeter)+' ชม.':''}</div></div>
+        ${ol!==null&&m.oilChangeIntervalHours&&ol<=60?`<span class="chip acc num6" style="margin-left:auto">น้ำมันเครื่อง ${fmt(ol)} ชม.</span>`:''}</div>`}).join('')}
+      <button class="link" onclick="machDlg(null)">+ เพิ่มรถ</button></div>`;
+  }
+  // quick compare card
+  h+=`<div class="card" style="background:var(--g100)"><h2 class="th-head" style="color:var(--g800)">เทียบราคาเร็ว ๆ</h2>
+    <div class="muted" style="font-size:13px;margin-bottom:6px">เขาให้เลือกว่าเหมาเที่ยวหรือคิดชั่วโมง — กดคำนวณดูก่อนรับงาน</div>
+    <button class="cta secondary" onclick="compareDlg('${db.jobs[0]?db.jobs[0].id:''}')">เปิดตัวเทียบราคา</button></div>`;
+  return h;
+}
+function fleetRates(){
+  let h=`<div class="card"><h2 class="th-head">ค่าแรง–ค่าคน <span class="muted" style="font-size:12px;font-weight:400">ตั้งครั้งเดียว ใช้ทุกงาน</span></h2>`;
+  for(const r of db.rates){
+    const hi=r.key==='backhoe_driver';
+    h+=`<div style="padding:10px 0;border-bottom:1px solid var(--n200);${hi?'background:var(--a100);margin:0 -17px;padding:10px 17px;':''}">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="nm" style="font-size:16px;font-weight:600">${esc(r.name)}</div>
+        <button class="num" style="margin-left:auto;font-size:17px;color:var(--a700)" onclick="editRateDlg('${r.id}')">${fmt(rateVal(r))} ›</button></div>
+      <div class="seg" style="margin-top:6px">${r.units.map(u=>
+        `<button class="${r.selUnit===u.unit?'on':''}" onclick="setRateUnit('${r.id}','${u.unit}')">${UNITSEL[u.unit]||u.unit} <span class="num6">${fmt(u.rate)}</span></button>`).join('')}</div>
+      ${r.note&&!hi?`<div class="sub muted" style="font-size:13px;margin-top:4px">${esc(r.note)}</div>`:''}
+      ${hi?`<div class="sub" style="font-size:13px;color:var(--a800);margin-top:4px">งานนี้เลือก${UNITSEL[r.selUnit]} · สลับได้ทุกงาน</div>`:''}
+    </div>`;
+  }
+  h+=`</div>`;
+  h+=`<div class="card"><h2 class="th-head">หน่วยวัสดุ</h2>
+    <div class="muted" style="font-size:13px;margin-bottom:8px">บางเจ้าคิดเป็นตัน บางเจ้าคิดเป็นคิว แต่เราจ่ายรถเป็นเที่ยว — ใส่ตัวคูณไว้ แอปแปลงให้เอง</div>
+    ${db.materials.map(m=>`<div class="line" onclick="editMatDlg('${m.id}')" style="cursor:pointer">
+      <div class="nm">${esc(m.name)}</div><div class="amt num6">1 คิว = ${fmtQ(m.tonPerCubic)} ตัน ›</div></div>`).join('')}
+    <div class="line" onclick="editTruckCapDlg()" style="cursor:pointer">
+      <div class="nm">สิบล้อ 1 เที่ยว</div><div class="amt num6">= ${fmtQ(db.team.cubicPerTripDefault)} คิว ›</div></div>
+    <button class="link" onclick="addMatDlg()">+ เพิ่มวัสดุ</button></div>`;
+  const cnt={};db.machines.forEach(m=>cnt[m.kind]=(cnt[m.kind]||0)+1);
+  h+=`<div class="card" style="background:var(--g100)"><h2 class="th-head" style="color:var(--g800)">รถที่มี ${db.machines.length} คัน</h2>
+    <div style="font-size:14px;color:var(--g800)">${Object.entries(cnt).map(([k,n])=>KINDK[k]+' '+n).join(' · ')}</div>
+    <div class="muted" style="font-size:13px">ทะเบียนใส่ทีหลังได้ ตอนนี้เรียกชื่อเล่นไปก่อน</div>
+    <button class="cta secondary" onclick="fleetTab='machines';render()">ดูรถแต่ละคัน ›</button></div>`;
+  return h;
+}
+function setRateUnit(id,unit){const r=db.rates.find(x=>x.id===id);r.selUnit=unit;touch(r);markDirty('rates',id);save();render()}
+function editRateDlg(id){
+  const r=db.rates.find(x=>x.id===id);
+  openDlg(`<h2 class="th-head">${esc(r.name)}</h2>
+    ${r.units.map((u,i)=>`<div class="field"><label>${UNITSEL[u.unit]||u.unit} (บาท)</label>
+      <input id="rt_u${i}" type="number" value="${u.rate}"></div>`).join('')}
+    ${r.key==='truck_driver'?`<div class="field"><label>ระยะไกลบวกเที่ยวละ (บาท)</label><input id="rt_extra" type="number" value="${r.extraPerTrip||0}"></div>`:''}
+    <div class="field"><label>หมายเหตุ</label><input id="rt_note" value="${esc(r.note||'')}"></div>
+    <div class="ctarow" style="margin-top:8px"><button class="cta secondary" onclick="closeDlg()">ยกเลิก</button>
+      <button class="cta grow2" onclick="saveRate('${id}')">บันทึก</button></div>`);
+}
+function saveRate(id){
+  const r=db.rates.find(x=>x.id===id);
+  r.units.forEach((u,i)=>{u.rate=+$('#rt_u'+i).value||u.rate});
+  const ex=$('#rt_extra');if(ex)r.extraPerTrip=+ex.value||0;
+  r.note=$('#rt_note').value.trim();
+  touch(r);markDirty('rates',id);save();closeDlg();render();
+}
+function editMatDlg(id){
+  const m=db.materials.find(x=>x.id===id);
+  openDlg(`<h2 class="th-head">${esc(m.name)}</h2>
+    <div class="field"><label>1 คิว = กี่ตัน</label><input id="mt_tpc" type="number" step="0.1" value="${m.tonPerCubic}"></div>
+    <div class="ctarow"><button class="cta secondary" onclick="closeDlg()">ยกเลิก</button>
+      <button class="cta grow2" onclick="const m=db.materials.find(x=>x.id==='${id}');m.tonPerCubic=+document.getElementById('mt_tpc').value||m.tonPerCubic;touch(m);markDirty('materials','${id}');save();closeDlg();render()">บันทึก</button></div>`);
+}
+function addMatDlg(){
+  openDlg(`<h2 class="th-head">เพิ่มวัสดุ</h2>
+    <div class="field"><label>ชื่อวัสดุ</label><input id="mt_name" placeholder="ทรายถม"></div>
+    <div class="field"><label>1 คิว = กี่ตัน</label><input id="mt_tpc" type="number" step="0.1" value="1.5"></div>
+    <div class="ctarow"><button class="cta secondary" onclick="closeDlg()">ยกเลิก</button>
+      <button class="cta grow2" onclick="saveNewMat()">เพิ่ม</button></div>`);
+}
+function saveNewMat(){
+  const n=$('#mt_name').value.trim();if(!n){toast('ใส่ชื่อวัสดุก่อน');return}
+  const m={id:uid(),name:n,tonPerCubic:+$('#mt_tpc').value||1.5,updatedAt:Date.now()};
+  db.materials.push(m);markDirty('materials',m.id);save();closeDlg();render();
+}
+function editTruckCapDlg(){
+  openDlg(`<h2 class="th-head">สิบล้อ 1 เที่ยว</h2>
+    <div class="field"><label>บรรทุกเฉลี่ยกี่คิว</label><input id="tc_v" type="number" step="0.5" value="${db.team.cubicPerTripDefault}"></div>
+    <div class="ctarow"><button class="cta secondary" onclick="closeDlg()">ยกเลิก</button>
+      <button class="cta grow2" onclick="db.team.cubicPerTripDefault=+document.getElementById('tc_v').value||12;save();closeDlg();render()">บันทึก</button></div>`);
+}
+function machDlg(id){
+  const m=id?machById(id):null;
+  openDlg(`<h2 class="th-head">${m?esc(m.nickname):'เพิ่มรถ'}</h2>
+    <div class="grid2">
+      <div class="field"><label>ชื่อเล่น</label><input id="mc_nick" value="${m?esc(m.nickname):''}" placeholder="แบ็คโฮใหญ่"></div>
+      <div class="field"><label>รุ่น</label><input id="mc_model" value="${m?esc(m.model||''):''}" placeholder="PC120"></div>
+    </div>
+    <div class="field"><label>ประเภท</label><select id="mc_kind">
+      ${Object.entries(KINDK).map(([k,v])=>`<option value="${k}" ${m&&m.kind===k?'selected':''}>${v}</option>`).join('')}</select></div>
+    <div class="grid2">
+      <div class="field"><label>hour meter ตอนนี้</label><input id="mc_hm" type="number" value="${m?m.hourMeter:0}"></div>
+      <div class="field"><label>ถ่ายน้ำมันเครื่องทุกกี่ ชม.</label><input id="mc_oi" type="number" value="${m?m.oilChangeIntervalHours:250}"></div>
+      <div class="field"><label>ถ่ายครั้งล่าสุดที่ ชม.</label><input id="mc_lo" type="number" value="${m?m.lastOilChangeHours:0}"></div>
+      <div class="field"><label>ความจุ (คิว) ถ้าเป็นสิบล้อ</label><input id="mc_cap" type="number" step="0.5" value="${m?m.capacityCubic||'':''}"></div>
+    </div>
+    <div class="ctarow" style="margin-top:8px"><button class="cta secondary" onclick="closeDlg()">ยกเลิก</button>
+      <button class="cta grow2" onclick="saveMach('${id||''}')">บันทึก</button></div>
+    ${m?`<button class="link" style="margin-top:10px;color:var(--a800)" onclick="delMach('${id}')">ลบรถคันนี้</button>`:''}`);
+}
+function saveMach(id){
+  const nick=$('#mc_nick').value.trim();if(!nick){toast('ใส่ชื่อเล่นก่อน');return}
+  let m=id?machById(id):null;
+  if(!m){m={id:uid(),ownedByTeam:true};db.machines.push(m)}
+  Object.assign(m,{nickname:nick,model:$('#mc_model').value.trim(),kind:$('#mc_kind').value,
+    hourMeter:+$('#mc_hm').value||0,oilChangeIntervalHours:+$('#mc_oi').value||0,
+    lastOilChangeHours:+$('#mc_lo').value||0,capacityCubic:+$('#mc_cap').value||null});
+  touch(m);markDirty('machines',m.id);save();closeDlg();render();
+}
+function delMach(id){
+  if(!confirm('ลบรถคันนี้?'))return;
+  db.machines=db.machines.filter(m=>m.id!==id);
+  markDirty('machines',id);save();closeDlg();render();
+}
+
+/* ═══════════════════ settings & sync ═══════════════════ */
+function settingsDlg(){
+  const s=db.settings;
+  openDlg(`<h2 class="th-head">ตั้งค่า</h2>
+    <div class="field"><label>ชื่อทีม/ร้าน</label><input id="st_team" value="${esc(db.team.name)}"></div>
+    <div class="field"><label>เป้ากำไรขั้นต่ำ (%)</label><input id="st_target" type="number" value="${db.team.targetMarginPct}"></div>
+    <div style="border-top:1px solid var(--n300);margin:12px 0;padding-top:10px">
+      <div style="font-weight:700;margin-bottom:6px">ซิงก์หลายเครื่อง (หลังบ้าน)</div>
+      <div class="muted" style="font-size:13px;margin-bottom:8px">วาง URL ของ Google Apps Script (ดูวิธีในไฟล์ Code.gs) — ไม่ใส่ก็ใช้ได้ เก็บในเครื่องอย่างเดียว</div>
+      <div class="field"><label>API URL</label><input id="st_api" value="${esc(s.apiUrl)}" placeholder="https://script.google.com/macros/s/.../exec"></div>
+      <div class="grid2">
+        <div class="field"><label>รหัสทีม</label><input id="st_code" value="${esc(s.teamCode)}"></div>
+        <div class="field"><label>PIN</label><input id="st_pin" value="${esc(s.pin)}"></div>
+      </div>
+      <div class="muted" style="font-size:12px">${s.lastSync?'ซิงก์ล่าสุด: '+new Date(s.lastSync).toLocaleString('th-TH'):'ยังไม่เคยซิงก์'} · ค้างส่ง ${dirty.size} รายการ</div>
+    </div>
+    <div class="ctarow" style="margin-top:8px"><button class="cta secondary" onclick="closeDlg()">ปิด</button>
+      <button class="cta grow2" onclick="saveSettings()">บันทึก + ซิงก์</button></div>
+    <button class="link" style="margin-top:10px" onclick="backupJSON()">⬇ สำรองข้อมูลทั้งหมด (ไฟล์)</button>
+    <button class="link" style="color:var(--a800)" onclick="resetDemo()">ล้างข้อมูลตัวอย่าง เริ่มใหม่หมด</button>`);
+}
+function saveSettings(){
+  db.team.name=$('#st_team').value.trim()||db.team.name;
+  db.team.targetMarginPct=+$('#st_target').value||20;
+  db.settings.apiUrl=$('#st_api').value.trim();
+  db.settings.teamCode=$('#st_code').value.trim();
+  db.settings.pin=$('#st_pin').value.trim();
+  save();closeDlg();render();
+  if(db.settings.apiUrl)syncNow();
+}
+function backupJSON(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,1)],{type:'application/json'}));
+  a.download='สำรอง-ต้นทุนงานดิน-'+today()+'.json';a.click();
+}
+function resetDemo(){
+  if(!confirm('ล้างข้อมูลทั้งหมดในเครื่องนี้ แล้วเริ่มจากศูนย์ (ไม่มีข้อมูลตัวอย่าง)?'))return;
+  const fresh=seed();
+  // strip demo jobs/data, keep rates/machines/materials as starter
+  fresh.jobs=[];fresh.jobDays=[];fresh.costLines=[];fresh.payments=[];fresh.customers=[];fresh.voiceNotes=[];
+  fresh.team.name=db.team.name;fresh.settings=db.settings;
+  db=fresh;dirty=new Set();save();closeDlg();toast('เริ่มใหม่แล้ว');goTab('jobs');
+}
+
+/* sync client — last-write-wins ต่อ record */
+const KINDS=['machines','rates','materials','customers','jobs','jobDays','costLines','payments'];
+let syncing=false;
+async function syncNow(){
+  const s=db.settings;
+  if(!s.apiUrl||syncing)return;
+  syncing=true;
+  try{
+    const push=[];
+    dirty.forEach(k=>{
+      const [kind,id]=k.split(':');
+      const arr=db[kind];if(!arr)return;
+      const rec=arr.find(r=>r.id===id);
+      push.push({kind,id,json:rec?JSON.stringify(rec):null,updatedAt:rec?rec.updatedAt:Date.now(),deleted:!rec});
+    });
+    const res=await fetch(s.apiUrl,{method:'POST',body:JSON.stringify({
+      action:'sync',teamCode:s.teamCode,pin:s.pin,since:s.lastSync||0,records:push})});
+    const out=await res.json();
+    if(!out.ok)throw new Error(out.error||'sync error');
+    (out.records||[]).forEach(r=>{
+      const arr=db[r.kind];if(!arr)return;
+      const i=arr.findIndex(x=>x.id===r.id);
+      if(r.deleted){if(i>=0)arr.splice(i,1);return}
+      const rec=JSON.parse(r.json);
+      if(i<0)arr.push(rec);
+      else if((arr[i].updatedAt||0)<(rec.updatedAt||0))arr[i]=rec;
+    });
+    dirty=new Set();db.dirty=[];
+    db.settings.lastSync=out.serverTime||Date.now();
+    save();toast('ซิงก์เรียบร้อย ✓');render();
+  }catch(e){console.warn('sync',e)}
+  syncing=false;
+}
+window.addEventListener('online',syncNow);
+setInterval(()=>{if(navigator.onLine&&dirty.size)syncNow()},60000);
+
+/* ═══════════════════ dialog helpers & render ═══════════════════ */
+function openDlg(html){const d=$('#dlg');d.innerHTML=html;d.showModal()}
+function closeDlg(){$('#dlg').close()}
+$('#dlg').addEventListener('click',e=>{if(e.target.id==='dlg')closeDlg()});
+
+function render(){
+  document.body.classList.toggle('dark',['voice','confirm'].includes(view.name));
+  ({jobs:scrJobs,job:scrJob,daylog:scrDaylog,newjob:scrNewJob,voice:scrVoice,confirm:scrConfirm,money:scrMoney,fleet:scrFleet}[view.name]||scrJobs)();
+}
+render();
+if(navigator.onLine&&db.settings.apiUrl)syncNow();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
