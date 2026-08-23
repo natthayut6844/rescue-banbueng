@@ -27,11 +27,11 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{height:100%}
-body{min-height:100%;background:var(--n300);font-family:var(--f-body);color:var(--text);
+body{min-height:100%;background:var(--bg);font-family:var(--f-body);color:var(--text);
   font-size:15px;line-height:1.55;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
-body.dark{background:#1f1d18}
-#phone{max-width:430px;margin:0 auto;min-height:100vh;min-height:100dvh;background:var(--bg);
-  display:flex;flex-direction:column;position:relative;box-shadow:0 0 40px rgba(46,43,37,.25)}
+body.dark{background:var(--n900)}
+#phone{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;background:var(--bg);
+  display:flex;flex-direction:column;position:relative}
 body.dark #phone{background:var(--n900)}
 button{font-family:inherit;font-size:inherit;color:inherit;border:0;background:none;cursor:pointer}
 input,select,textarea{font-family:inherit;font-size:16px;color:var(--text);width:100%;
@@ -62,7 +62,7 @@ main{flex:1;overflow-y:auto;padding:0 16px;padding-bottom:170px;-webkit-overflow
 .backbar .sub{font-size:13px;color:var(--n600)}
 
 /* fixed bottom */
-#bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:50;
+#bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;z-index:50;
   padding:10px 16px calc(10px + env(safe-area-inset-bottom));
   background:linear-gradient(to top,var(--bg) 78%,rgba(245,234,216,0));display:flex;flex-direction:column;gap:10px}
 body.dark #bottom{background:linear-gradient(to top,var(--n900) 78%,rgba(46,43,37,0))}
@@ -156,7 +156,31 @@ dialog h2{font-size:18px;margin-bottom:12px}
 .darklist .line{border-color:var(--n800)}
 .creamcard{background:var(--n100);color:var(--text);border-radius:var(--r-lg);padding:17px;box-shadow:var(--sh-lg);margin-bottom:13px}
 
-@media (min-width:500px){ body{padding:0 0 0} }
+/* ══════════ tablet / PC — ขยายเต็มจอ จัดการ์ดหลายคอลัมน์ ══════════ */
+@media (min-width:768px){
+  body{background:var(--n300)}
+  body.dark{background:#1f1d18}
+  #phone{max-width:none;width:100%;background:transparent}
+  body.dark #phone{background:transparent}
+  main{width:100%;max-width:1100px;margin:0 auto;padding:0 28px 170px}
+  /* หน้า list (งาน/เงิน/รถ-คน/รายละเอียดงาน): การ์ดไหลเป็นหลายคอลัมน์ตามความกว้างจอ */
+  #phone[data-screen="jobs"] main,#phone[data-screen="job"] main,
+  #phone[data-screen="money"] main,#phone[data-screen="fleet"] main{
+    column-width:360px;column-gap:16px}
+  .card,.darkcard,.creamcard,.stat3,.cta,.warn,.spoken,button.link{break-inside:avoid}
+  .appbar,.backbar,.spanall{column-span:all}
+  .appbar{padding:22px 4px 14px}
+  .backbar{padding:18px 0 12px}
+  /* หน้าฟอร์ม/พูด: คอลัมน์เดียว กึ่งกลาง อ่านง่าย */
+  #phone[data-screen="daylog"] main,#phone[data-screen="newjob"] main{max-width:620px}
+  #phone[data-screen="voice"] main,#phone[data-screen="confirm"] main{max-width:520px}
+  #bottom{max-width:520px}
+  .card:hover{box-shadow:var(--sh-lg)}
+  dialog{width:min(480px,calc(100vw - 40px))}
+}
+@media (min-width:1200px){
+  main{max-width:1280px}
+}
 </style>
 </head>
 <body>
@@ -1096,7 +1120,7 @@ function exportCSV(){
 function scrFleet(){
   const mk=nowMk();
   let h=`<div class="appbar"><div><div class="team">${esc(db.team.name)}</div><h1 class="th-head">รถ-คน</h1></div></div>
-  <div style="padding:0 0 12px"><div class="seg" style="width:100%;display:flex">
+  <div class="spanall" style="padding:0 0 12px"><div class="seg" style="width:100%;max-width:480px;display:flex">
     <button style="flex:1" class="${fleetTab==='machines'?'on':''}" onclick="fleetTab='machines';render()">รถแต่ละคัน เดือนนี้</button>
     <button style="flex:1" class="${fleetTab==='rates'?'on':''}" onclick="fleetTab='rates';render()">ค่าแรง–หน่วยวัสดุ</button>
   </div></div>`;
@@ -1354,6 +1378,7 @@ $('#dlg').addEventListener('click',e=>{if(e.target.id==='dlg')closeDlg()});
 
 function render(){
   document.body.classList.toggle('dark',['voice','confirm'].includes(view.name));
+  document.getElementById('phone').dataset.screen=view.name;
   ({jobs:scrJobs,job:scrJob,daylog:scrDaylog,newjob:scrNewJob,voice:scrVoice,confirm:scrConfirm,money:scrMoney,fleet:scrFleet}[view.name]||scrJobs)();
 }
 render();

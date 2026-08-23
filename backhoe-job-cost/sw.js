@@ -1,5 +1,5 @@
 /* Service worker — ให้แอปเปิดได้ตอนไม่มีเน็ต (offline-first) */
-const CACHE = 'backhoe-job-cost-v1';
+const CACHE = 'backhoe-job-cost-v2';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', e => {
