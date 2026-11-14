@@ -49,7 +49,7 @@ h1,h2,h3{line-height:1.15}
 
 /* ══════════ layout ══════════ */
 main{flex:1;overflow-y:auto;padding:0 16px;padding-bottom:170px;-webkit-overflow-scrolling:touch}
-.appbar{padding:14px 16px 10px;display:flex;align-items:flex-start;gap:10px}
+.appbar{padding:14px 16px 10px;display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
 .appbar .team{font-size:12px;font-weight:600;color:var(--n600);letter-spacing:.04em}
 .appbar h1{font-size:20px}
 .appbar .right{margin-left:auto;text-align:right}
@@ -85,7 +85,7 @@ body.dark .tab.on{background:transparent;color:var(--a400)}
 /* ══════════ cards & bits ══════════ */
 .card{background:var(--n100);border-radius:var(--r-lg);padding:17px;box-shadow:var(--sh-md);margin-bottom:13px}
 .card h2{font-size:16px;margin-bottom:10px}
-.chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;padding:4px 12px;border-radius:999px;background:var(--surface);color:var(--n700)}
+.chip{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:13px;font-weight:600;padding:4px 12px;border-radius:999px;background:var(--surface);color:var(--n700)}
 .chip.acc{background:var(--a200);color:var(--a800)}
 .chip.grn{background:var(--g200);color:var(--g800)}
 .chip.dash{background:none;border:1.5px dashed var(--n400);color:var(--n600);font-weight:500}
@@ -162,7 +162,7 @@ dialog h2{font-size:18px;margin-bottom:12px}
   body.dark{background:#1f1d18}
   #phone{max-width:none;width:100%;background:transparent}
   body.dark #phone{background:transparent}
-  main{width:100%;max-width:1100px;margin:0 auto;padding:0 28px 170px}
+  main{width:100%;max-width:none;margin:0 auto;padding:0 28px 170px}
   /* หน้า list (งาน/เงิน/รถ-คน/รายละเอียดงาน): การ์ดไหลเป็นหลายคอลัมน์ตามความกว้างจอ */
   #phone[data-screen="jobs"] main,#phone[data-screen="job"] main,
   #phone[data-screen="money"] main,#phone[data-screen="fleet"] main{
@@ -172,14 +172,14 @@ dialog h2{font-size:18px;margin-bottom:12px}
   .appbar{padding:22px 4px 14px}
   .backbar{padding:18px 0 12px}
   /* หน้าฟอร์ม/พูด: คอลัมน์เดียว กึ่งกลาง อ่านง่าย */
-  #phone[data-screen="daylog"] main,#phone[data-screen="newjob"] main{max-width:620px}
+  #phone[data-screen="daylog"] main,#phone[data-screen="newjob"] main,#phone[data-screen="settings"] main{max-width:620px}
   #phone[data-screen="voice"] main,#phone[data-screen="confirm"] main{max-width:520px}
   #bottom{max-width:520px}
   .card:hover{box-shadow:var(--sh-lg)}
   dialog{width:min(480px,calc(100vw - 40px))}
 }
 @media (min-width:1200px){
-  main{max-width:1280px}
+  main{padding:0 40px 170px}
 }
 </style>
 </head>
@@ -345,6 +345,7 @@ function seed(){
 
 db=load();
 if(!db){db=seed();save()}
+if(db.settings.voiceHoldSec==null)db.settings.voiceHoldSec=5;
 dirty=new Set(db.dirty||[]);
 
 /* lookups */
@@ -421,6 +422,14 @@ let view={name:'jobs'};
 let stack=[];
 let unitPref={}; // jobId -> trip|cubic|ton
 let fleetTab='machines';
+let viewMk=nowMk();
+function monthNav(){
+  const isNow=viewMk===nowMk();
+  return `<div style="display:flex;align-items:center;gap:6px">
+    <button class="bk" style="width:46px;height:46px;border-radius:999px;background:var(--n100);box-shadow:var(--sh-sm)" onclick="viewMk=addMonths(viewMk,-1);render()" aria-label="เดือนก่อน">‹</button>
+    <button class="chip ${isNow?'':'acc'}" style="min-height:40px" onclick="viewMk=nowMk();render()">${isNow?'เดือนนี้':'กลับเดือนนี้'}</button>
+    <button class="bk" style="width:46px;height:46px;border-radius:999px;background:var(--n100);box-shadow:var(--sh-sm);${isNow?'opacity:.35;pointer-events:none':''}" onclick="viewMk=addMonths(viewMk,1);render()" aria-label="เดือนถัดไป">›</button></div>`;
+}
 let lastJobId=db.jobs.find(j=>j.status==='active')?.id||null;
 function go(v){stack.push(view);view=v;render();$('#main').scrollTop=0;window.scrollTo(0,0)}
 function back(){view=stack.pop()||{name:'jobs'};render()}
@@ -432,6 +441,7 @@ const IC={
   jobs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="4"/><path d="M8 2v4M16 2v4M7 11h7M7 16h4"/></svg>',
   mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1M12 18v4"/></svg>',
   money:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="3.5"/><circle cx="12" cy="12.5" r="2.6"/><path d="M5.5 10v5M18.5 10v5"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
   truck:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></svg>',
   back:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
   plus:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
@@ -439,10 +449,11 @@ const IC={
 
 /* ═══════════════════ shared UI ═══════════════════ */
 function tabbar(){
-  const tabs=[['jobs','งาน',IC.jobs],['voice','พูด',IC.mic],['money','เงิน',IC.money],['fleet','รถ-คน',IC.truck]];
+  const tabs=[['jobs','งาน',IC.jobs],['voice','พูด',IC.mic],['money','เงิน',IC.money],['fleet','รถ-คน',IC.truck],['settings','ตั้งค่า',IC.gear]];
   const cur=['jobs','job','daylog','newjob'].includes(view.name)?'jobs'
     :['voice','confirm'].includes(view.name)?'voice'
-    :['money'].includes(view.name)?'money':'fleet';
+    :['money'].includes(view.name)?'money'
+    :['settings'].includes(view.name)?'settings':'fleet';
   return '<div class="tabbar">'+tabs.map(([k,l,ic])=>
     `<button class="tab ${cur===k?'on':''}" onclick="goTab('${k}')">${ic}<span>${l}</span></button>`).join('')+'</div>';
 }
@@ -618,6 +629,9 @@ function scrDaylog(){
       <div class="field"><label>เงินที่เจ้าที่จ่ายวันนี้</label><input type="number" min="0" name="cashReceived" inputmode="numeric" value="${d.cashReceived||''}" placeholder="0"></div>
       <div class="field"><label>น้ำมันที่เติม (ลิตร)</label><input type="number" min="0" name="fuelLitres" inputmode="decimal" value="${d.fuelLitres||''}" placeholder="0"></div>
       <div class="field"><label>น้ำมันที่เติม (บาท)</label><input type="number" min="0" name="fuelBaht" inputmode="numeric" value="${d.fuelBaht||''}" placeholder="0"></div>
+      <div class="field"><label>รถที่จด hour meter</label><select name="machineId"><option value="">— ไม่จด —</option>
+        ${db.machines.filter(m=>m.oilChangeIntervalHours||m.hourMeter).map(m=>`<option value="${m.id}" ${(d.machineId||(jobById(jid)||{}).machineId)===m.id?'selected':''}>${esc(m.nickname)}${m.model?' '+m.model:''} (ตอนนี้ ${fmt(m.hourMeter)})</option>`).join('')}</select></div>
+      <div class="field"><label>เลข hour meter ปิดวัน</label><input type="number" step="0.1" min="0" name="hourMeterEnd" inputmode="decimal" value="${d.hourMeterEnd||''}" placeholder="เช่น 8750"></div>
     </div>
     <label class="checkrow"><input type="checkbox" name="foreman" ${d.foreman!==false?'checked':''}> คนคุมงานออกงานวันนี้</label>
     <label class="checkrow"><input type="checkbox" name="dozer" ${d.dozer?'checked':''}> รถไถออกงานวันนี้ (คิดค่าคนขับรถไถ)</label>
@@ -662,8 +676,13 @@ function saveDaylog(ev){
   const day=editing||{id:uid(),jobId:jid};
   Object.assign(day,{date:f.date.value,trips:+f.trips.value||0,hours:+f.hours.value||0,workers:+f.workers.value||0,
     fuelLitres:+f.fuelLitres.value||0,fuelBaht:+f.fuelBaht.value||0,mechanic:f.mechanic.checked,dozer:f.dozer.checked,
-    foreman:f.foreman.checked,note:f.note.value.trim(),weather:''});
+    foreman:f.foreman.checked,note:f.note.value.trim(),weather:'',
+    cashReceived:+f.cashReceived.value||0,machineId:f.machineId.value||'',hourMeterEnd:+f.hourMeterEnd.value||0});
   touch(day);
+  if(day.machineId&&day.hourMeterEnd){
+    const mc=machById(day.machineId);
+    if(mc&&day.hourMeterEnd>(+mc.hourMeter||0)){mc.hourMeter=day.hourMeterEnd;touch(mc);markDirty('machines',mc.id)}
+  }
   if(!editing)db.jobDays.push(day);
   markDirty('jobDays',day.id);
   // regenerate auto lines for this day
@@ -675,9 +694,11 @@ function saveDaylog(ev){
       unit:'lump',qty:1,rate:+f.fuelBaht.value,amount:+f.fuelBaht.value,includesDriver:false,source:'manual',updatedAt:Date.now()};
     db.costLines.push(fl);markDirty('costLines',fl.id);
   }
-  const cash=+f.cashReceived.value||0;
-  if(cash>0){
-    const p={id:uid(),jobId:jid,date:day.date,amount:cash,note:'รับหน้างาน',updatedAt:Date.now()};
+  // เงินรับหน้างาน: ผูกกับบันทึกวันนี้ แก้กี่ครั้งก็ไม่นับซ้ำ
+  db.payments.filter(x=>x.jobDayId===day.id).forEach(x=>markDirty('payments',x.id));
+  db.payments=db.payments.filter(x=>x.jobDayId!==day.id);
+  if(day.cashReceived>0){
+    const p={id:uid(),jobId:jid,jobDayId:day.id,date:day.date,amount:day.cashReceived,note:'รับหน้างาน',updatedAt:Date.now()};
     db.payments.push(p);markDirty('payments',p.id);
   }
   lastJobId=jid;save();
@@ -686,9 +707,10 @@ function saveDaylog(ev){
   view={name:'job',jobId:jid};stack=[{name:'jobs'}];render();
 }
 function delDaylog(id){
-  if(!confirm('ลบบันทึกวันนี้? รายการค่าแรงอัตโนมัติของวันนี้จะถูกลบด้วย'))return;
+  if(!confirm('ลบบันทึกวันนี้? ค่าแรงอัตโนมัติ น้ำมัน และเงินรับหน้างานของวันนี้จะถูกลบด้วย'))return;
   db.jobDays=db.jobDays.filter(d=>d.id!==id);
   db.costLines=db.costLines.filter(l=>l.jobDayId!==id);
+  db.payments=db.payments.filter(x=>x.jobDayId!==id);
   markDirty('jobDays',id);save();toast('ลบแล้ว');back();
 }
 
@@ -746,9 +768,17 @@ function saveJob(ev){
 }
 function editJob(id){
   const j=jobById(id);
+  const c=custOf(j);
   openDlg(`<h2 class="th-head">แก้งาน</h2>
     <div class="field"><label>ชื่องาน</label><input id="ej_title" value="${esc(j.title)}"></div>
-    <div class="field"><label>ราคา (${{per_trip:'บาท/เที่ยว',per_cubic:'บาท/คิว',per_ton:'บาท/ตัน',hourly:'บาท/ชม.',daily:'บาท/วัน',lump_sum:'เหมาทั้งงาน'}[j.revenueMode]})</label>
+    <div class="grid2">
+      <div class="field"><label>เจ้าของงาน</label><input id="ej_cust" list="custlist" value="${esc(c.name||'')}">
+        <datalist id="custlist">${db.customers.map(x=>`<option value="${esc(x.name)}">`).join('')}</datalist></div>
+      <div class="field"><label>สถานที่</label><input id="ej_place" value="${esc(j.place||c.place||'')}"></div>
+    </div>
+    <div class="field"><label>วิธีคิดเงิน</label><select id="ej_mode">
+      ${Object.entries(REVL).map(([k,v])=>`<option value="${k}" ${j.revenueMode===k?'selected':''}>${v}</option>`).join('')}</select></div>
+    <div class="field"><label>ราคา (บาทต่อหน่วยที่เลือก หรือยอดเหมาทั้งงาน)</label>
       <input id="ej_rate" type="number" value="${j.revenueMode==='lump_sum'?j.lumpSumAmount:j.revenueRate}"></div>
     <div class="field"><label>นัดเก็บเงิน</label><input id="ej_due" type="date" value="${j.dueDate||''}"></div>
     <div class="field"><label>คิว/เที่ยว</label><input id="ej_cpt" type="number" step="0.5" value="${j.cubicPerTrip||12}"></div>
@@ -759,6 +789,14 @@ function editJob(id){
 function saveEditJob(id){
   const j=jobById(id);
   j.title=$('#ej_title').value.trim()||j.title;
+  const cn=$('#ej_cust').value.trim();
+  if(cn){
+    let cust=db.customers.find(x=>x.name===cn);
+    if(!cust){cust={id:uid(),name:cn,place:$('#ej_place').value.trim()};db.customers.push(cust);touch(cust);markDirty('customers',cust.id)}
+    j.customerId=cust.id;
+  }
+  j.place=$('#ej_place').value.trim();
+  j.revenueMode=$('#ej_mode').value;
   const r=+$('#ej_rate').value||0;
   if(j.revenueMode==='lump_sum')j.lumpSumAmount=r;else j.revenueRate=r;
   j.dueDate=$('#ej_due').value;j.cubicPerTrip=+$('#ej_cpt').value||12;
@@ -874,7 +912,7 @@ function runCompare(trips,hours,days){
 }
 
 /* ═══════════════════ screen: พูด (voice) ═══════════════════ */
-let recog=null, recording=false, transcript='';
+let recog=null, recording=false, transcript='', committedText='', manualStop=false, silenceIv=null, lastSpeechAt=0;
 function scrVoice(){
   document.body.classList.add('dark');
   const notes=[...db.voiceNotes].sort((a,b)=>a.date<b.date?1:-1).slice(0,6);
@@ -888,8 +926,8 @@ function scrVoice(){
     <div><div class="team" style="color:var(--n400)">${esc(db.team.name)}</div><h1 class="th-head">พูดใส่แอปได้เลย</h1></div></div>
   <div class="micwrap">
     <button class="mic ${recording?'rec':''}" id="micbtn" onclick="toggleRec()" aria-label="กดเพื่อพูด"><div class="wave"><i></i><i></i><i></i><i></i><i></i></div></button>
-    <div style="margin-top:16px;font-size:15px;color:var(--n400)">${recording?'ฟังอยู่... พูดได้เลย':'กดแล้วพูด เช่น'}</div>
-    ${recording?'':'<div style="font-size:14px;color:var(--n500);text-align:center;padding:0 24px">"10 ล้อมาส่ง ขี้แร่ 10 เที่ยว ลงหน้างานลุงยาว คนงาน 4 คน"</div>'}
+    <div style="margin-top:16px;font-size:15px;color:var(--n400)">${recording?'ฟังอยู่... พูดต่อได้เลย ไม่รีบ':'กดแล้วพูด เช่น'}</div>
+    ${recording?`<div style="font-size:14px;color:var(--n500);text-align:center;padding:0 24px">พูดจบแล้วกดปุ่มอีกครั้ง · หรือเงียบเกิน ${db.settings.voiceHoldSec||5} วิ จะไปหน้ายืนยันให้เอง</div>`:'<div style="font-size:14px;color:var(--n500);text-align:center;padding:0 24px">"10 ล้อมาส่ง ขี้แร่ 10 เที่ยว ลงหน้างานลุงยาว คนงาน 4 คน"</div>'}
   </div>
   <div class="spoken" id="spokenbox">${transcript?esc(transcript):'<span style="color:var(--n500)">ที่พูดจะขึ้นตรงนี้ — หรือพิมพ์เอาก็ได้ข้างล่าง</span>'}</div>
   <div style="display:flex;gap:8px;margin-bottom:14px">
@@ -916,15 +954,42 @@ function scrVoice(){
 function toggleRec(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){toast('เครื่องนี้ไม่รองรับพูด — พิมพ์เอาได้เลย');$('#typein').focus();return}
-  if(recording){recog&&recog.stop();return}
-  recog=new SR();recog.lang='th-TH';recog.interimResults=true;recog.continuous=false;
-  recording=true;transcript='';render();
-  recog.onresult=e=>{transcript=[...e.results].map(r=>r[0].transcript).join('');
-    const b=$('#spokenbox');if(b)b.textContent=transcript};
-  recog.onend=()=>{recording=false;
-    if(transcript.trim())goConfirm(transcript.trim());else render()};
-  recog.onerror=()=>{recording=false;toast('ฟังไม่ทัน ลองใหม่หรือพิมพ์เอา');render()};
-  recog.start();
+  if(recording){manualStop=true;try{recog.stop()}catch(e){finishRec()}return}
+  recog=new SR();recog.lang='th-TH';recog.interimResults=true;recog.continuous=true;
+  recording=true;manualStop=false;transcript='';committedText='';lastSpeechAt=Date.now();
+  render();
+  recog.onresult=e=>{
+    let fin='',interim='';
+    for(const r of e.results){if(r.isFinal)fin+=r[0].transcript+' ';else interim+=r[0].transcript}
+    transcript=(committedText+' '+fin+' '+interim).replace(/\s+/g,' ').trim();
+    lastSpeechAt=Date.now();
+    const b=$('#spokenbox');if(b)b.textContent=transcript;
+  };
+  recog.onend=()=>{
+    // บางเครื่องตัดเองตอนเงียบสั้น ๆ — ถ้ายังไม่กดจบและยังไม่ครบเวลาหน่วง ให้ฟังต่อ
+    if(recording&&!manualStop){
+      committedText=transcript;
+      try{recog.start();return}catch(e){}
+    }
+    finishRec();
+  };
+  recog.onerror=ev=>{
+    if(ev.error==='not-allowed'||ev.error==='service-not-allowed'){
+      manualStop=true;recording=false;clearInterval(silenceIv);
+      toast('ไม่ได้รับอนุญาตใช้ไมค์ — พิมพ์แทนได้');render();
+    }
+    // no-speech / aborted / network: ปล่อยให้ onend จัดการ (ฟังต่อหรือจบ)
+  };
+  silenceIv=setInterval(()=>{
+    const hold=(+db.settings.voiceHoldSec||5)*1000;
+    if(recording&&transcript&&Date.now()-lastSpeechAt>hold){manualStop=true;try{recog.stop()}catch(e){finishRec()}}
+  },400);
+  try{recog.start()}catch(e){recording=false;clearInterval(silenceIv);toast('เปิดไมค์ไม่ได้ ลองพิมพ์แทน');render()}
+}
+function finishRec(){
+  if(!recording&&!silenceIv)return;
+  recording=false;clearInterval(silenceIv);silenceIv=null;
+  if(transcript.trim())goConfirm(transcript.trim());else render();
 }
 function useTyped(){
   const t=$('#typein').value.trim();
@@ -933,25 +998,76 @@ function useTyped(){
 }
 
 /* ═══════════════════ Thai parser ═══════════════════ */
-function thaiDigits(s){return s.replace(/[๐-๙]/g,d=>'๐๑๒๓๔๕๖๗๘๙'.indexOf(d))}
+function thaiDigits(s){
+  s=s.replace(/[๐-๙]/g,d=>'๐๑๒๓๔๕๖๗๘๙'.indexOf(d));
+  // คำอ่านตัวเลขที่ตามด้วยหน่วย เช่น "สิบห้าเที่ยว" "สี่ คน" → ตัวเลข (ไม่แตะ "สิบล้อ")
+  return s.replace(/((?:หนึ่ง|เอ็ด|สอง|ยี่|สาม|สี่|ห้า|หก|เจ็ด|แปด|เก้า|สิบ|ร้อย|พัน|ครึ่ง)+)\s*(?=เที่ยว|คน|ชั่วโมง|ชม|ลิตร|บาท|วัน)/g,
+    (w,num)=>{const n=thaiWordNum(num);return n==null?w:n+' '});
+}
+function thaiWordNum(w){
+  if(w==='ครึ่ง')return 0.5;
+  const D={'หนึ่ง':1,'เอ็ด':1,'สอง':2,'ยี่':2,'สาม':3,'สี่':4,'ห้า':5,'หก':6,'เจ็ด':7,'แปด':8,'เก้า':9};
+  let total=0,cur=0,rest=w;
+  while(rest){
+    let hit=false;
+    for(const k of Object.keys(D)){if(rest.startsWith(k)){cur=D[k];rest=rest.slice(k.length);hit=true;break}}
+    if(hit)continue;
+    if(rest.startsWith('พัน')){total+=(cur||1)*1000;cur=0;rest=rest.slice(3);continue}
+    if(rest.startsWith('ร้อย')){total+=(cur||1)*100;cur=0;rest=rest.slice(4);continue}
+    if(rest.startsWith('สิบ')){total+=(cur||1)*10;cur=0;rest=rest.slice(3);continue}
+    if(rest.startsWith('ครึ่ง')){total+=0.5;rest=rest.slice(5);continue}
+    return null;
+  }
+  return total+cur;
+}
 function parseThai(text){
-  const t=thaiDigits(text);
-  const p={text, jobId:null, trips:null, hours:null, workers:null, fuelLitres:null, fuelBaht:null, cash:null, materialId:null, missing:[]};
+  const t=thaiDigits(text).replace(/\s+/g,' ');
+  const p={text, jobId:null, jobGuess:false, newName:null, mode:null, rate:null,
+    trips:null, hours:null, workers:null, fuelLitres:null, fuelBaht:null, cash:null, materialId:null, missing:[]};
   let m;
-  if(m=t.match(/(\d+(?:\.\d+)?)\s*เที่ยว/))p.trips=+m[1];
+  if(m=t.match(/(\d+(?:\.\d+)?)\s*เที่ยว(?!ละ)/))p.trips=+m[1];
   if(m=t.match(/(\d+(?:\.\d+)?)\s*(?:ชั่วโมง|ชม\.?)/))p.hours=+m[1];
   if(m=t.match(/คนงาน\s*(\d+)\s*คน/))p.workers=+m[1];
   else if(m=t.match(/(\d+)\s*คน(?!ขับ)/))p.workers=+m[1];
   if(m=t.match(/น้ำมัน\s*(\d+(?:\.\d+)?)\s*(?:ลิตร|ล\.?)/))p.fuelLitres=+m[1];
   if(m=t.match(/น้ำมัน\s*([\d,]+)\s*บาท/))p.fuelBaht=+m[1].replace(/,/g,'');
   if(m=t.match(/(?:ได้เงิน|รับเงิน|จ่ายมา|โอนมา)\s*([\d,]+)/))p.cash=+m[1].replace(/,/g,'');
+  if(m=t.match(/เที่ยวละ\s*([\d,]+)/))p.rate=+m[1].replace(/,/g,'');
   for(const mat of db.materials){if(t.includes(mat.name)){p.materialId=mat.id;break}}
+  // --- หางาน (ไม่สนช่องว่าง เพราะระบบฟังเสียงชอบเว้นวรรค เช่น "ลุง ยาว") ---
+  const ns=x=>String(x||'').replace(/\s+/g,'');
+  const T=ns(t);
   const actives=db.jobs.filter(j=>j.status==='active');
-  for(const j of actives){
-    const c=custOf(j);
-    if((c.name&&t.includes(c.name))||t.includes(j.title)){p.jobId=j.id;break}
+  let found=null;
+  // 1) ชื่อลูกค้า — เลือกชื่อที่ยาวที่สุดที่ตรง (กัน "ลุง" ไปชน "ลุงยาว")
+  const custHits=db.customers.filter(c=>ns(c.name).length>=2&&T.includes(ns(c.name)))
+    .sort((a,b)=>ns(b.name).length-ns(a.name).length);
+  if(custHits.length){
+    const c=custHits[0];
+    found=actives.find(j=>j.customerId===c.id)||null;
+    if(!found){p.newName=c.name;p.mode='new'}
   }
-  if(!p.jobId&&actives.length)p.jobId=lastJobId&&actives.some(j=>j.id===lastJobId)?lastJobId:actives[0].id;
+  // 2) ชื่องานเต็ม หรือคำในชื่องาน 3 ตัวอักษรขึ้นไป
+  if(!found&&!p.newName){
+    found=actives.find(j=>ns(j.title).length>=3&&T.includes(ns(j.title)))||null;
+    if(!found){
+      outer: for(const j of actives){for(const tok of (j.title||'').split(/\s+/)){
+        if(ns(tok).length>=4&&T.includes(ns(tok))){found=j;break outer}}}
+    }
+  }
+  if(found)p.jobId=found.id;
+  else if(!p.newName){
+    // 3) ชื่อใหม่หลังคำว่า หน้างาน/งานของ/ให้ ฯลฯ → เสนอสร้างลูกค้า+งานใหม่
+    const nm=t.match(/(?:ลงหน้างาน|หน้างาน|งานของ|ลงงานที่|ลงที่|งานที่|ลงให้|ให้)\s*([ก-๙a-zA-Z ]{2,40})/);
+    if(nm){
+      let cand=ns(nm[1].replace(/(คนงาน|น้ำมัน|เที่ยว|ชั่วโมง|ชม|ช่าง|รับเงิน|ได้เงิน|จ่ายมา|โอนมา|วันนี้|เมื่อวาน|รถ|สิบล้อ|แบ็คโฮ|แม็คโคร).*$/,''));
+      if(cand.length>=2&&!db.materials.some(x=>cand.includes(ns(x.name)))){p.newName=cand;p.mode='new'}
+    }
+  }
+  if(!p.jobId&&!p.newName&&actives.length){
+    p.jobId=lastJobId&&actives.some(j=>j.id===lastJobId)?lastJobId:actives[0].id;
+    p.jobGuess=true; // เดาให้ — หน้ายืนยันจะ highlight ให้เช็คก่อน
+  }
   if(p.hours==null)p.missing.push('+ เลขชั่วโมงเครื่อง');
   if(!t.includes('ช่าง'))p.missing.push('+ ช่างซ่อม');
   p.mechanic=t.includes('ช่าง');
@@ -968,7 +1084,10 @@ function goConfirm(text){
 function scrConfirm(){
   document.body.classList.add('dark');
   const p=parsed; if(!p){goTab('voice');return}
-  const j=jobById(p.jobId);
+  const creatingNew=p.newName&&p.mode!=='existing';
+  const j=creatingNew
+    ?{id:null,revenueMode:'per_trip',revenueRate:p.rate||0,cubicPerTrip:db.team.cubicPerTripDefault||12,materialId:p.materialId||''}
+    :jobById(p.jobId);
   const cpt=j?(+j.cubicPerTrip||12):12;
   const mat=p.materialId?db.materials.find(m=>m.id===p.materialId):(j?matOf(j):null);
   const tpc=mat?+mat.tonPerCubic:1.5;
@@ -987,9 +1106,26 @@ function scrConfirm(){
   let h=`<div class="backbar" style="color:var(--n100)"><button class="bk" style="background:var(--n800)" onclick="back()">${IC.back}</button>
     <div><h1 class="th-head">แยกให้แล้ว ถูกไหม</h1><div class="sub" style="color:var(--n400)">แตะช่องไหนก็แก้ได้</div></div></div>`;
   h+=`<div class="spoken" style="margin-top:2px"><div class="lbl">ที่พูดมา</div>"${esc(p.text)}"</div>`;
+  const jobOpts=db.jobs.filter(x=>x.status==='active').map(x=>`<option value="${x.id}" ${x.id===p.jobId?'selected':''}>${esc(x.title)}</option>`).join('');
+  let jobField;
+  if(p.newName){
+    jobField=`<div style="background:var(--a100);border-radius:var(--r-md);padding:11px 13px;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600;color:var(--a800);margin-bottom:7px">ยังไม่มีงานของ "${esc(p.newName)}" ในรายการ — ทำยังไงดี</div>
+      <div class="seg" style="background:#fff;margin-bottom:6px">
+        <button class="${p.mode!=='existing'?'on':''}" onclick="parsed.mode='new';render()">+ สร้างงานใหม่</button>
+        <button class="${p.mode==='existing'?'on':''}" onclick="parsed.mode='existing';if(!parsed.jobId){const a=db.jobs.find(x=>x.status==='active');parsed.jobId=a?a.id:null}render()">เลือกงานเดิม</button>
+      </div>
+      ${p.mode==='existing'
+        ?`<select onchange="parsed.jobId=this.value;render()">${jobOpts}</select>`
+        :`<div style="font-size:13px;color:var(--a800)">จะสร้างลูกค้า "${esc(p.newName)}" กับงานใหม่ให้เอง แล้วลงบันทึกวันนี้เข้าไปเลย${p.rate?` · เที่ยวละ ${fmt(p.rate)}`:' · ยังไม่ได้บอกราคา (ไปตั้งทีหลังได้ในหน้างาน)'}</div>`}
+    </div>`;
+  }else{
+    jobField=`<div class="field" ${p.jobGuess?'style="background:var(--a100);border-radius:var(--r-md);padding:10px 13px"':''}>
+      <label ${p.jobGuess?'style="color:var(--a800)"':''}>งาน${p.jobGuess?' — ไม่ได้ยินชื่องาน เดาให้ก่อน เช็คด้วยนะ':''}</label>
+      <select onchange="parsed.jobId=this.value;parsed.jobGuess=false;render()">${jobOpts}</select></div>`;
+  }
   h+=`<div class="creamcard">
-    <div class="field"><label>งาน</label><select onchange="parsed.jobId=this.value;render()">
-      ${db.jobs.filter(x=>x.status==='active').map(x=>`<option value="${x.id}" ${x.id===p.jobId?'selected':''}>${esc(x.title)}</option>`).join('')}</select></div>
+    ${jobField}
     <div class="grid2">
       <div class="field"><label>คนงานหน้างาน (คน)</label><input type="number" value="${p.workers??''}" placeholder="—" onchange="parsed.workers=+this.value||null;render()"></div>
       <div class="field"><label>ชั่วโมงแบ็คโฮ</label><input type="number" step="0.5" value="${p.hours??''}" placeholder="—" onchange="parsed.hours=+this.value||null;render()"></div>
@@ -1024,7 +1160,18 @@ function scrConfirm(){
 }
 function saveParsed(){
   const p=parsed;
-  const j=jobById(p.jobId);
+  let j, createdNew=false;
+  if(p.newName&&p.mode!=='existing'){
+    // สร้างลูกค้า + งานใหม่จากชื่อที่พูดมา
+    let cust=db.customers.find(c=>c.name===p.newName);
+    if(!cust){cust={id:uid(),name:p.newName,place:'',updatedAt:Date.now()};db.customers.push(cust);markDirty('customers',cust.id)}
+    j={id:uid(),customerId:cust.id,title:'งาน'+p.newName,place:'',startDate:today(),endDate:'',status:'active',
+      revenueMode:'per_trip',revenueRate:p.rate||0,lumpSumAmount:0,materialId:p.materialId||'',
+      cubicPerTrip:db.team.cubicPerTripDefault||12,dueDate:'',machineId:'',updatedAt:Date.now()};
+    db.jobs.push(j);markDirty('jobs',j.id);createdNew=true;
+  }else{
+    j=jobById(p.jobId);
+  }
   if(!j){toast('เลือกงานก่อน');return}
   const day={id:uid(),jobId:j.id,date:today(),trips:p.trips||0,hours:p.hours||0,workers:p.workers||0,
     fuelLitres:p.fuelLitres||0,fuelBaht:p.fuelBaht||0,mechanic:!!p.mechanic,dozer:false,foreman:true,
@@ -1041,17 +1188,16 @@ function saveParsed(){
   const vn={id:uid(),date:today(),text:p.text,saved:true,updatedAt:Date.now()};
   db.voiceNotes.push(vn);
   lastJobId=j.id;transcript='';parsed=null;save();
-  toast('ลงให้แล้ว ✓');
+  toast(createdNew?('สร้างงานใหม่ "'+j.title+'" + ลงบันทึกแล้ว ✓'+(j.revenueRate?'':' อย่าลืมตั้งราคา')):'ลงให้แล้ว ✓');
   view={name:'job',jobId:j.id};stack=[{name:'jobs'}];render();
 }
 
 /* ═══════════════════ screen: เงิน (money) ═══════════════════ */
 function scrMoney(){
-  const mk=nowMk(), ms=monthStats(mk);
+  const mk=viewMk, ms=monthStats(mk);
   const pctOfRev=ms.rev>0?(ms.profit/ms.rev*100):0;
   let h=`<div class="appbar"><div><div class="team">${esc(db.team.name)}</div><h1 class="th-head">เงิน · ${thMY(mk)}</h1></div>
-    <button class="bk" style="margin-left:auto;width:46px;height:46px;border-radius:999px;background:var(--n100);box-shadow:var(--sh-sm);display:flex;align-items:center;justify-content:center" onclick="settingsDlg()" title="ตั้งค่า">
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></svg></button></div>`;
+    <div style="margin-left:auto">${monthNav()}</div></div>`;
   // dark month card + 6-month bars
   const months=[];for(let i=5;i>=0;i--)months.push(addMonths(mk,-i));
   const stats=months.map(m=>({mk:m,s:monthStats(m)}));
@@ -1093,12 +1239,12 @@ function scrMoney(){
       <div><div class="nm">${esc(j.title)}</div><div class="sub" style="color:var(--a700)">${pf<0?'ขาดทุนอยู่':'เหลือแค่ '+jobPct(j).toFixed(0)+'% (เป้า '+db.team.targetMarginPct+'%)'}</div></div>
       <div class="amt num ${pf<0?'loss':''}">${fmt(pf)}</div></div>`}).join('')}</div>`;
   }
-  h+=`<button class="cta secondary" style="margin-bottom:12px" onclick="exportCSV()">⬇ ส่งออก Excel/CSV เดือนนี้</button>`;
+  h+=`<button class="cta secondary" style="margin-bottom:12px" onclick="exportCSV()">⬇ ส่งออก Excel/CSV ${thMY(mk)}</button>`;
   $('#main').innerHTML=h;
   $('#bottom').innerHTML=tabbar();
 }
 function exportCSV(){
-  const mk=nowMk();
+  const mk=viewMk;
   let rows=[['งาน','วันที่','ประเภท','รายการ','หน่วย','จำนวน','ราคา/หน่วย','จำนวนเงิน']];
   db.costLines.forEach(l=>{
     const j=jobById(l.jobId);if(!j)return;
@@ -1118,10 +1264,11 @@ function exportCSV(){
 
 /* ═══════════════════ screen: รถ-คน (fleet + rates) ═══════════════════ */
 function scrFleet(){
-  const mk=nowMk();
-  let h=`<div class="appbar"><div><div class="team">${esc(db.team.name)}</div><h1 class="th-head">รถ-คน</h1></div></div>
+  const mk=viewMk;
+  let h=`<div class="appbar"><div><div class="team">${esc(db.team.name)}</div><h1 class="th-head">รถ-คน${fleetTab==='machines'?' · '+thMY(mk):''}</h1></div>
+    ${fleetTab==='machines'?`<div style="margin-left:auto">${monthNav()}</div>`:''}</div>
   <div class="spanall" style="padding:0 0 12px"><div class="seg" style="width:100%;max-width:480px;display:flex">
-    <button style="flex:1" class="${fleetTab==='machines'?'on':''}" onclick="fleetTab='machines';render()">รถแต่ละคัน เดือนนี้</button>
+    <button style="flex:1" class="${fleetTab==='machines'?'on':''}" onclick="fleetTab='machines';render()">รถแต่ละคัน รายเดือน</button>
     <button style="flex:1" class="${fleetTab==='rates'?'on':''}" onclick="fleetTab='rates';render()">ค่าแรง–หน่วยวัสดุ</button>
   </div></div>`;
   h+=fleetTab==='machines'?fleetMachines(mk):fleetRates();
@@ -1269,7 +1416,8 @@ function machDlg(id){
     <div class="grid2">
       <div class="field"><label>hour meter ตอนนี้</label><input id="mc_hm" type="number" value="${m?m.hourMeter:0}"></div>
       <div class="field"><label>ถ่ายน้ำมันเครื่องทุกกี่ ชม.</label><input id="mc_oi" type="number" value="${m?m.oilChangeIntervalHours:250}"></div>
-      <div class="field"><label>ถ่ายครั้งล่าสุดที่ ชม.</label><input id="mc_lo" type="number" value="${m?m.lastOilChangeHours:0}"></div>
+      <div class="field"><label>ถ่ายครั้งล่าสุดที่ ชม.</label><input id="mc_lo" type="number" value="${m?m.lastOilChangeHours:0}">
+        <button type="button" class="link" onclick="document.getElementById('mc_lo').value=document.getElementById('mc_hm').value">✓ ถ่ายวันนี้ (ใช้เลขปัจจุบัน)</button></div>
       <div class="field"><label>ความจุ (คิว) ถ้าเป็นสิบล้อ</label><input id="mc_cap" type="number" step="0.5" value="${m?m.capacityCubic||'':''}"></div>
     </div>
     <div class="ctarow" style="margin-top:8px"><button class="cta secondary" onclick="closeDlg()">ยกเลิก</button>
@@ -1292,34 +1440,96 @@ function delMach(id){
 }
 
 /* ═══════════════════ settings & sync ═══════════════════ */
-function settingsDlg(){
+/* ═══════════════════ screen: ตั้งค่า ═══════════════════ */
+function scrSettings(){
   const s=db.settings;
-  openDlg(`<h2 class="th-head">ตั้งค่า</h2>
-    <div class="field"><label>ชื่อทีม/ร้าน</label><input id="st_team" value="${esc(db.team.name)}"></div>
-    <div class="field"><label>เป้ากำไรขั้นต่ำ (%)</label><input id="st_target" type="number" value="${db.team.targetMarginPct}"></div>
-    <div style="border-top:1px solid var(--n300);margin:12px 0;padding-top:10px">
-      <div style="font-weight:700;margin-bottom:6px">ซิงก์หลายเครื่อง (หลังบ้าน)</div>
-      <div class="muted" style="font-size:13px;margin-bottom:8px">วาง URL ของ Google Apps Script (ดูวิธีในไฟล์ Code.gs) — ไม่ใส่ก็ใช้ได้ เก็บในเครื่องอย่างเดียว</div>
-      <div class="field"><label>API URL</label><input id="st_api" value="${esc(s.apiUrl)}" placeholder="https://script.google.com/macros/s/.../exec"></div>
-      <div class="grid2">
-        <div class="field"><label>รหัสทีม</label><input id="st_code" value="${esc(s.teamCode)}"></div>
-        <div class="field"><label>PIN</label><input id="st_pin" value="${esc(s.pin)}"></div>
-      </div>
-      <div class="muted" style="font-size:12px">${s.lastSync?'ซิงก์ล่าสุด: '+new Date(s.lastSync).toLocaleString('th-TH'):'ยังไม่เคยซิงก์'} · ค้างส่ง ${dirty.size} รายการ</div>
+  let h=`<div class="appbar"><div><div class="team">${esc(db.team.name)}</div><h1 class="th-head">ตั้งค่า</h1>
+    <div class="muted" style="font-size:13px">แก้ช่องไหนก็บันทึกให้ทันที</div></div></div>`;
+  h+=`<div class="card"><h2 class="th-head">ทีมของเรา</h2>
+    <div class="field"><label>ชื่อทีม/ร้าน</label><input value="${esc(db.team.name)}" onchange="db.team.name=this.value.trim()||db.team.name;save();toast('บันทึกแล้ว')"></div>
+    <div class="grid2">
+      <div class="field"><label>เป้ากำไรขั้นต่ำ (%)</label><input type="number" value="${db.team.targetMarginPct}" onchange="db.team.targetMarginPct=+this.value||20;save();toast('บันทึกแล้ว')"></div>
+      <div class="field"><label>สิบล้อกี่คิว/เที่ยว</label><input type="number" step="0.5" value="${db.team.cubicPerTripDefault}" onchange="db.team.cubicPerTripDefault=+this.value||12;save();toast('บันทึกแล้ว')"></div>
+    </div></div>`;
+  h+=`<div class="card"><h2 class="th-head">การฟังเสียง</h2>
+    <div class="muted" style="font-size:13px;margin-bottom:7px">เงียบนานเท่าไหร่ถึงถือว่าพูดจบ — ระหว่างพูดหยุดคิดได้ ไม่ตัดกลางคัน</div>
+    <div class="seg">${[3,5,8,12].map(n=>`<button class="num6 ${(+s.voiceHoldSec||5)===n?'on':''}" onclick="db.settings.voiceHoldSec=${n};save();render()">${n} วิ</button>`).join('')}</div>
+    <div class="muted" style="font-size:13px;margin-top:7px">พูดจบแล้วไม่อยากรอ กดปุ่มไมค์ซ้ำเพื่อจบได้เลย</div></div>`;
+  h+=`<div class="card"><h2 class="th-head">หน้าจอ</h2>
+    <div class="field"><label>ขนาดตัวหนังสือ (อ่านกลางแดด)</label>
+      <div class="seg">${[[1,'ปกติ'],[1.12,'ใหญ่'],[1.25,'ใหญ่มาก']].map(([z,l])=>`<button class="${(+s.uiScale||1)===z?'on':''}" onclick="db.settings.uiScale=${z};save();applyScale();render()">${l}</button>`).join('')}</div></div>
+    <button class="cta secondary" onclick="toggleFullscreen()">${document.fullscreenElement?'ออกจากโหมดเต็มจอ':'⛶ เปิดเต็มจอ (ซ่อนแถบเบราว์เซอร์)'}</button>
+    <div class="muted" style="font-size:13px;margin-top:7px">บนมือถือ แนะนำ "เพิ่มไปยังหน้าจอโฮม" จะเปิดเต็มจอเหมือนแอปทุกครั้ง</div></div>`;
+  h+=`<div class="card"><h2 class="th-head">ลูกค้า / เจ้าของงาน</h2>
+    <div class="muted" style="font-size:13px;margin-bottom:4px">พูดชื่อที่มีในนี้ แอปจะจับเข้างานให้ถูกคน — ชื่อใหม่ที่พูด แอปจะถามก่อนแล้วเพิ่มให้เอง</div>
+    ${db.customers.map(c=>`<div class="line" onclick="custDlg('${c.id}')" style="cursor:pointer">
+      <div><div class="nm">${esc(c.name)}</div><div class="sub">${esc(c.place||'—')}${c.phone?' · '+esc(c.phone):''}</div></div>
+      <div class="amt muted" style="font-size:13px">แก้ ›</div></div>`).join('')||'<div class="muted" style="font-size:14px">ยังไม่มีลูกค้า</div>'}
+    <button class="link" onclick="custDlg(null)">+ เพิ่มลูกค้า</button></div>`;
+  h+=`<div class="card"><h2 class="th-head">ซิงก์หลายเครื่อง (หลังบ้าน)</h2>
+    <div class="muted" style="font-size:13px;margin-bottom:8px">วาง URL ของ Google Apps Script (วิธีติดตั้งอยู่ในไฟล์ Code.gs) — ไม่ใส่ก็ใช้ได้ เก็บในเครื่องอย่างเดียว</div>
+    <div class="field"><label>API URL</label><input value="${esc(s.apiUrl)}" placeholder="https://script.google.com/macros/s/.../exec" onchange="db.settings.apiUrl=this.value.trim();save()"></div>
+    <div class="grid2">
+      <div class="field"><label>รหัสทีม</label><input value="${esc(s.teamCode)}" onchange="db.settings.teamCode=this.value.trim();save()"></div>
+      <div class="field"><label>PIN</label><input value="${esc(s.pin)}" onchange="db.settings.pin=this.value.trim();save()"></div>
     </div>
-    <div class="ctarow" style="margin-top:8px"><button class="cta secondary" onclick="closeDlg()">ปิด</button>
-      <button class="cta grow2" onclick="saveSettings()">บันทึก + ซิงก์</button></div>
-    <button class="link" style="margin-top:10px" onclick="backupJSON()">⬇ สำรองข้อมูลทั้งหมด (ไฟล์)</button>
-    <button class="link" style="color:var(--a800)" onclick="resetDemo()">ล้างข้อมูลตัวอย่าง เริ่มใหม่หมด</button>`);
+    <div class="muted" style="font-size:12px;margin-bottom:8px">${s.lastSync?'ซิงก์ล่าสุด: '+new Date(s.lastSync).toLocaleString('th-TH'):'ยังไม่เคยซิงก์'} · ค้างส่ง ${dirty.size} รายการ</div>
+    <button class="cta secondary" onclick="syncNow()">ซิงก์เดี๋ยวนี้</button></div>`;
+  h+=`<div class="card"><h2 class="th-head">ข้อมูล</h2>
+    <button class="cta secondary" style="margin-bottom:10px" onclick="backupJSON()">⬇ สำรองข้อมูลทั้งหมด (ไฟล์ .json)</button>
+    <label class="cta secondary" style="margin-bottom:10px">⬆ นำเข้าไฟล์สำรอง<input type="file" accept=".json,application/json" style="display:none" onchange="importBackup(event)"></label>
+    <button class="cta secondary" style="margin-bottom:10px" onclick="exportCSV()">ส่งออก Excel/CSV เดือนนี้</button>
+    <button class="link" style="color:var(--a800)" onclick="resetDemo()">ล้างข้อมูลทั้งหมด เริ่มใหม่จากศูนย์</button></div>`;
+  $('#main').innerHTML=h;
+  $('#bottom').innerHTML=tabbar();
 }
-function saveSettings(){
-  db.team.name=$('#st_team').value.trim()||db.team.name;
-  db.team.targetMarginPct=+$('#st_target').value||20;
-  db.settings.apiUrl=$('#st_api').value.trim();
-  db.settings.teamCode=$('#st_code').value.trim();
-  db.settings.pin=$('#st_pin').value.trim();
-  save();closeDlg();render();
-  if(db.settings.apiUrl)syncNow();
+function applyScale(){
+  const z=+db.settings.uiScale||1;
+  document.documentElement.style.zoom=z===1?'':z;
+}
+function toggleFullscreen(){
+  const el=document.documentElement;
+  if(document.fullscreenElement)document.exitFullscreen&&document.exitFullscreen();
+  else if(el.requestFullscreen)el.requestFullscreen().catch(()=>toast('เบราว์เซอร์นี้เปิดเต็มจอไม่ได้'));
+  else toast('เบราว์เซอร์นี้เปิดเต็มจอไม่ได้ — ใช้ "เพิ่มไปยังหน้าจอโฮม" แทน');
+}
+document.addEventListener('fullscreenchange',()=>{if(view.name==='settings')render()});
+function custDlg(id){
+  const c=id?db.customers.find(x=>x.id===id):null;
+  openDlg(`<h2 class="th-head">${c?'แก้ลูกค้า':'เพิ่มลูกค้า'}</h2>
+    <div class="field"><label>ชื่อ (ชื่อที่ใช้เรียกตอนพูดใส่แอป)</label><input id="cu_name" value="${c?esc(c.name):''}" placeholder="ลุงยาว"></div>
+    <div class="field"><label>สถานที่/หมู่บ้าน</label><input id="cu_place" value="${c?esc(c.place||''):''}" placeholder="บ้านหนองบัว"></div>
+    <div class="field"><label>เบอร์โทร</label><input id="cu_phone" value="${c?esc(c.phone||''):''}" inputmode="tel"></div>
+    <div class="ctarow"><button class="cta secondary" onclick="closeDlg()">ยกเลิก</button>
+      <button class="cta grow2" onclick="saveCust('${id||''}')">บันทึก</button></div>
+    ${c?`<button class="link" style="margin-top:10px;color:var(--a800)" onclick="delCust('${id}')">ลบลูกค้าคนนี้</button>`:''}`);
+}
+function saveCust(id){
+  const name=$('#cu_name').value.trim();if(!name){toast('ใส่ชื่อก่อน');return}
+  let c=id?db.customers.find(x=>x.id===id):null;
+  if(!c){c={id:uid()};db.customers.push(c)}
+  Object.assign(c,{name,place:$('#cu_place').value.trim(),phone:$('#cu_phone').value.trim()});
+  touch(c);markDirty('customers',c.id);save();closeDlg();render();
+}
+function delCust(id){
+  if(db.jobs.some(j=>j.customerId===id)){toast('ลบไม่ได้ มีงานผูกกับลูกค้าคนนี้อยู่');return}
+  db.customers=db.customers.filter(c=>c.id!==id);
+  markDirty('customers',id);save();closeDlg();render();
+}
+function importBackup(ev){
+  const f=ev.target.files&&ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!d||!Array.isArray(d.jobs)||!Array.isArray(d.costLines))throw 0;
+      if(!confirm('นำเข้าแล้วข้อมูลในไฟล์จะแทนที่ข้อมูลทั้งหมดในเครื่องนี้ ยืนยันไหม'))return;
+      db=d;dirty=new Set(db.dirty||[]);
+      if(db.settings.voiceHoldSec==null)db.settings.voiceHoldSec=5;
+      save();toast('นำเข้าข้อมูลแล้ว ✓');goTab('jobs');
+    }catch(e){toast('ไฟล์ไม่ถูกต้อง — ต้องเป็นไฟล์สำรองจากแอปนี้')}
+  };
+  r.readAsText(f);
 }
 function backupJSON(){
   const a=document.createElement('a');
@@ -1379,8 +1589,9 @@ $('#dlg').addEventListener('click',e=>{if(e.target.id==='dlg')closeDlg()});
 function render(){
   document.body.classList.toggle('dark',['voice','confirm'].includes(view.name));
   document.getElementById('phone').dataset.screen=view.name;
-  ({jobs:scrJobs,job:scrJob,daylog:scrDaylog,newjob:scrNewJob,voice:scrVoice,confirm:scrConfirm,money:scrMoney,fleet:scrFleet}[view.name]||scrJobs)();
+  ({jobs:scrJobs,job:scrJob,daylog:scrDaylog,newjob:scrNewJob,voice:scrVoice,confirm:scrConfirm,money:scrMoney,fleet:scrFleet,settings:scrSettings}[view.name]||scrJobs)();
 }
+applyScale();
 render();
 if(navigator.onLine&&db.settings.apiUrl)syncNow();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
